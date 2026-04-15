@@ -55,7 +55,6 @@ Los feriados están hardcodeados en el objeto `DATA` dentro del JS:
 - `home` — feriados principales
 - `faq` — preguntas frecuentes
 - `leyes` — respaldo legal
-- `fuente` — fuentes y sitios útiles
 
 ---
 
@@ -92,11 +91,23 @@ Los feriados están hardcodeados en el objeto `DATA` dentro del JS:
 
 ## Decisiones de Diseño
 - Fuentes serif (`Fraunces`) para títulos y números → sensación premium
-- Animaciones sutiles (fadeUp, bounceIn, riseUp) al cargar
-- Confetti decorativo en el hero (28 puntos animados)
-- Cards con `border-left` de color según tipo de feriado
+- Animaciones sutiles (fadeUp, riseUp) al cargar; confetti decorativo en hero
 - Feriados pasados con `opacity: 0.42` para contexto visual
 - Responsive: en móvil se oculta la columna derecha de countdown
+- Cards de feriados nacionales y regionales usan el mismo componente `f-card`
+- Días sandwich se muestran como filas propias en el listado (borde punteado amarillo)
+- Toggle "Sandwich" en header del listado muestra/oculta esas filas
+- Stats muestran formato X/Y: restantes/total para el año actual
+- Próximo feriado en azul (no rojo, para no evocar el 18 de septiembre)
+- Sin emojis en la UI (eliminados en etapa 1)
+
+## Sección Panoramas
+- 25 actividades curadas de chileestuyo.cl, TripAdvisor y santiagosecreto.com
+- Datos en constante `ACTIVIDADES` en el JS, campo `temporada`: verano/otoño/invierno/primavera/todo-el-año
+- Filtros por categoría: `CAT_LABELS` + `CAT_COLORS` en el JS
+- Solo se muestran categorías con ≥1 actividad para la temporada actual
+- Mínimo 3 por categoría; rellena con off-season si necesario
+- `getSeason(month)` y `matchesSeason(a, season)` son los helpers clave
 
 ---
 
