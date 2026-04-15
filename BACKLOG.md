@@ -19,10 +19,11 @@
 
 | # | Tarea | Estado | Notas |
 |---|---|---|---|
-| D-02 | Accesibilidad: revisar contraste de colores | 🟡 Pendiente | `--muted: #7B8DB0` puede fallar WCAG AA sobre `--bg: #F5F7FF` |
-| D-03 | Accesibilidad: agregar `aria-label` a botones | 🟡 Pendiente | Botones de año y vista no tienen aria-label |
-| D-04 | Empty state en vista "por mes" sin feriados | 🟡 Pendiente | Muestra lista vacía sin mensaje explicativo |
-| D-05 | Ampliar panoramas con imágenes o ilustraciones | 💡 Idea | Las cards de actividades son texto puro; una imagen destacada mejoraría mucho el visual |
+| D-02 | **Rediseño de paleta + design system** | 🟡 Pendiente | Definir tokens de color, tipografía, espaciado y componentes base antes de seguir iterando. Incluye modo oscuro como opción. |
+| D-03 | **Verificar accesibilidad en todos los dispositivos** | 🟡 Pendiente | Desktop, tablet y móvil. WCAG AA mínimo: contraste, aria-labels, navegación por teclado, tamaño de tap targets en móvil |
+| D-04 | Accesibilidad: contraste `--muted` | 🟡 Pendiente | `#7B8DB0` sobre `#F5F7FF` puede fallar WCAG AA — parte de D-03 |
+| D-05 | Empty state en vista "por mes" sin feriados | 🟡 Pendiente | Muestra lista vacía sin mensaje explicativo |
+| D-06 | Ampliar panoramas con imágenes o ilustraciones | 💡 Idea | Cards de actividades son texto puro; imagen destacada mejoraría el visual |
 
 ---
 
