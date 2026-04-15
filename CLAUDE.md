@@ -7,6 +7,24 @@ Sitio web estático de una sola página (index.html) que muestra los feriados na
 
 ---
 
+## Flujo de trabajo
+
+1. **Hacer cambios** en index.html
+2. **Revisar** abriendo `file:///Users/cristinagomez/feriadoschile/index.html` en el browser
+3. **Guardar progreso** (punto de restauración, sin publicar):
+   ```
+   git add index.html && git commit -m "descripción del cambio"
+   ```
+4. **Publicar** en misferiados.cl solo cuando todo está aprobado:
+   ```
+   git push
+   ```
+   Cloudflare detecta el push a GitHub y despliega automáticamente (~1 min).
+
+> `commit` = guardar localmente · `push` = publicar en producción
+
+---
+
 ## Stack Técnico
 - **Frontend:** HTML + CSS + JS vanilla (sin frameworks, sin build tools)
 - **Estructura:** Un solo archivo `index.html` (~735 líneas)
