@@ -317,3 +317,16 @@ h1,h2,h3{line-height:1.2}
   .yr-btn{font-size:11px}
   .hero-year-pills{gap:6px}.hero-yr{font-size:12px}
 }
+
+/* LAY-06: elementos anchos con scroll horizontal */
+.leyes-content,.faq-content{overflow-x:hidden}
+.ley-card{overflow-x:auto}
+
+/* TYP-05: orientación landscape en mobile */
+@media(max-width:768px) and (orientation:landscape){
+  .hero{padding:28px 24px 60px}
+  .hero-title{font-size:clamp(24px,5vw,36px)}
+  .stats-wrap{margin-top:-24px}
+  .nav-links{top:60px}
+  #listView{max-height:340px}
+}

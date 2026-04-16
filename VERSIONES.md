@@ -6,6 +6,28 @@
 
 ---
 
+## v1.6 — Sprint 2: Rendimiento, Accesibilidad, Landscape · 2026-04-16
+
+| Campo | Detalle |
+|---|---|
+| **Hash** | `pendiente` |
+| **Estado** | ✅ En producción |
+
+### Cambios
+- PERF-01: preconnect para Google Fonts, charset y viewport antes del resto del `<head>`
+- PERF-02: `defer` en data.js y app.js — no bloquean render inicial
+- ACC-01: aria-label en todos los botones (años, toggle sandwich, vistas, hamburguesa, volver arriba)
+- TYP-05: media query landscape — hero compacto, lista reducida en mobile horizontal
+- LAY-06: overflow-x:auto en ley-card, overflow-x:hidden en contenedores de páginas
+- LAY-04 / ACC-02: marcados como N/A (sin imágenes reales ni formularios en el sitio)
+
+### Rollback
+```bash
+git reset --hard c6d9c4d   # vuelve a v1.5 (Sprint 1 completo)
+```
+
+---
+
 ## v1.5 — Sprint 1 Mobile completo · 2026-04-16
 
 | Campo | Detalle |

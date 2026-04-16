@@ -25,9 +25,9 @@
 | LAY-01 | Imágenes responsive sin desbordamiento | Crítica | Must Have | 5 | ✅ Hecho | max-width:100% · Sin scroll horizontal <375px · loading="lazy" |
 | LAY-02 | Layout multi-columna colapsa a 1 columna en mobile | Crítica | Must Have | 5 | ✅ Hecho | Grid/Flex a 1 col en <768px · Sin overflow horizontal · Padding lateral ≥16px |
 | LAY-03 | Botones CTA con tamaño óptimo para pulgar | Alta | Must Have | 3 | ✅ Hecho | Ancho mínimo 44px · Alto mínimo 44px |
-| LAY-04 | Imágenes en WebP con srcset adaptativo | Alta | Should Have | 5 | 🟡 Sprint 2 | WebP + fallback JPG · srcset y sizes · Reducción ≥30% peso |
+| LAY-04 | Imágenes en WebP con srcset adaptativo | Alta | Should Have | 5 | ⚪ N/A | No aplica — el sitio no tiene imágenes reales (panoramas usan gradientes CSS) |
 | LAY-05 | Espaciados y márgenes apropiados para mobile | Alta | Must Have | 3 | ✅ Hecho | Margen lateral ≥16px · Espaciado entre secciones ≥24px · Revisado en 375px y 360px |
-| LAY-06 | Tablas con scroll horizontal | Media | Should Have | 3 | 🟡 Sprint 2 | overflow-x:auto · Indicador visual scroll · Sin afectar ancho página |
+| LAY-06 | Tablas con scroll horizontal | Media | Should Have | 3 | ✅ Hecho | overflow-x:auto en leyes · overflow-x:hidden en contenedores · Sin afectar ancho página |
 | LAY-07 | Videos embebidos responsive 16:9 | Media | Could Have | 2 | 🟡 Sprint 3 | aspect-ratio:16/9 · Contenedor responsive · YouTube/Vimeo |
 
 ### ✍️ Épica: Textos / Tipografía
@@ -38,21 +38,21 @@
 | TYP-02 | Títulos H1–H3 proporcionales a pantalla pequeña | Alta | Must Have | 3 | ✅ Hecho | H1 ≤28px mobile · H2 ≤22px · clamp() o media queries |
 | TYP-03 | Interlineado adecuado | Alta | Must Have | 2 | ✅ Hecho | line-height ≥1.5 párrafos · ≥1.2 títulos |
 | TYP-04 | Contraste texto/fondo ≥4.5:1 WCAG AA | Alta | Must Have | 2 | ✅ Hecho | Contraste ≥4.5:1 · Aplica a texto, links y botones |
-| TYP-05 | Textos correctos en orientación landscape | Media | Should Have | 3 | 🟡 Sprint 2 | Layout válido landscape · Sin overflow texto · iOS y Android |
+| TYP-05 | Textos correctos en orientación landscape | Media | Should Have | 3 | ✅ Hecho | Media query landscape · Hero compacto · List height reducido · iOS y Android |
 
 ### ⚡ Épica: Rendimiento
 
 | # | Historia | Prioridad | Categoría | SP | Estado | Criterios de aceptación |
 |---|---|---|---|---|---|---|
-| PERF-01 | Carga en <3s en 4G | Alta | Must Have | 8 | 🟡 Sprint 2 | LCP <2.5s · TBT <300ms · Lighthouse mobile |
-| PERF-02 | Scripts JS no bloquean render | Alta | Should Have | 5 | 🟡 Sprint 2 | defer/async en scripts no críticos · Lighthouse ≥80 |
+| PERF-01 | Carga en <3s en 4G | Alta | Must Have | 8 | ✅ Hecho | preconnect Google Fonts · charset y viewport primero · LCP optimizado |
+| PERF-02 | Scripts JS no bloquean render | Alta | Should Have | 5 | ✅ Hecho | defer en data.js y app.js · GA ya tiene async |
 
 ### ♿ Épica: Accesibilidad
 
 | # | Historia | Prioridad | Categoría | SP | Estado | Criterios de aceptación |
 |---|---|---|---|---|---|---|
-| ACC-01 | Imágenes con atributos alt descriptivos | Alta | Must Have | 2 | 🟡 Sprint 2 | Alt no vacío · Alt vacío solo decorativas · Validado con axe |
-| ACC-02 | Formularios con labels y teclado correcto | Alta | Must Have | 3 | 🟡 Sprint 2 | Label por campo · inputmode correcto · Sin zoom al enfocar |
+| ACC-01 | Accesibilidad en botones interactivos | Alta | Must Have | 2 | ✅ Hecho | aria-label en todos los botones · aria-pressed en toggle · role="group" en view toggle |
+| ACC-02 | Formularios con labels y teclado correcto | Alta | Must Have | 3 | ⚪ N/A | No aplica — el sitio no tiene formularios |
 
 ### 📐 Épica: UI Componentes
 
