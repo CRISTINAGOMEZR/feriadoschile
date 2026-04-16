@@ -304,9 +304,11 @@ function renderActividades(cat){
   grid.innerHTML='';
   lista.forEach(a=>{
     const color=CAT_COLORS[a.cat]||'var(--azul)';
+    // UI-02: portada con gradiente por categoría
+    const coverBg=`linear-gradient(135deg, ${color}cc 0%, ${color}88 100%)`;
     const card=document.createElement('div');
     card.className='act-card';
-    card.innerHTML=`<div class="act-top"><span class="act-cat" style="background:${color}">${CAT_LABELS[a.cat]}</span><div class="act-nombre">${a.nombre}</div><div class="act-lugar">${a.ubicacion}</div></div><div class="act-body"><div class="act-desc">${a.desc}</div><a class="act-link" href="${a.url}" target="_blank">Ver más →</a></div>`;
+    card.innerHTML=`<div class="act-cover" style="background:${coverBg}"><span class="act-cat" style="background:${color}">${CAT_LABELS[a.cat]}</span></div><div class="act-top"><div class="act-nombre">${a.nombre}</div><div class="act-lugar">${a.ubicacion}</div></div><div class="act-body"><div class="act-desc">${a.desc}</div><a class="act-link" href="${a.url}" target="_blank">Ver más →</a></div>`;
     grid.appendChild(card);
   });
 }

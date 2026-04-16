@@ -6,6 +6,31 @@
 
 ---
 
+## v1.5 — Sprint 1 Mobile completo · 2026-04-16
+
+| Campo | Detalle |
+|---|---|
+| **Hash** | `pendiente` |
+| **Estado** | ✅ En producción |
+
+### Cambios
+- LAY-05: Spacing entre secciones ≥24px, padding lateral 16px en mobile
+- TYP-01: font-size base 16px global (sin zoom forzado)
+- TYP-02: Títulos con clamp() — H1 ≤28px, H2 ≤20px en mobile
+- TYP-03: line-height 1.5 en body, 1.2 en títulos
+- TYP-04: Contraste de textos secundarios mejorado (#5a6a8a)
+- UI-01: overflow-x:hidden en html y body, sin scroll horizontal
+- UI-02: Cards panoramas con portada de gradiente por categoría (aspect-ratio 16:9)
+- UI-03: Cards en mobile con layout horizontal (imagen izq, texto der, max 120px)
+- UI-04: Filtros de categoría como chips compactos (36px, wrap)
+
+### Rollback
+```bash
+git reset --hard 71708e9   # vuelve a v1.4 (Sprint 1 nav)
+```
+
+---
+
 ## v1.4 — Sprint 1 Mobile/Responsive · 2026-04-16
 
 | Campo | Detalle |
