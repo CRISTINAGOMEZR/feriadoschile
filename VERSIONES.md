@@ -10,7 +10,7 @@
 
 | Campo | Detalle |
 |---|---|
-| **Hash** | `pendiente` |
+| **Hash** | `45060ae` |
 | **Estado** | ✅ En producción |
 
 ### Cambios
