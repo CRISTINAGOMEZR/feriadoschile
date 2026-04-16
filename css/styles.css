@@ -167,16 +167,20 @@ nav{background:var(--azul);display:flex;align-items:center;justify-content:space
 
 /* ACTIVIDADES */
 
-/* UI-04: filtros en una sola línea con scroll horizontal */
-.act-filters{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:16px;padding-bottom:4px;scrollbar-width:none;-ms-overflow-style:none}
+/* UI-04: filtros en una sola línea con scroll horizontal + fade que indica más contenido */
+.act-filters-wrap{position:relative}
+.act-filters-wrap::after{content:'';position:absolute;top:0;right:0;width:40px;height:100%;background:linear-gradient(to right,transparent,var(--bg));pointer-events:none}
+.act-filters{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:16px;padding-bottom:4px;padding-right:32px;scrollbar-width:none;-ms-overflow-style:none}
 .act-filters::-webkit-scrollbar{display:none}
 .act-filter{border:2px solid var(--border);background:var(--card);border-radius:20px;padding:0 14px;height:36px;display:inline-flex;align-items:center;flex-shrink:0;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:var(--muted);cursor:pointer;transition:all 0.18s;white-space:nowrap}
 .act-filter:hover{border-color:var(--azul-m);color:var(--azul-m)}
 .act-filter.active{background:var(--azul);border-color:var(--azul);color:#fff}
 .acts-season{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:16px;letter-spacing:0.5px;text-transform:uppercase}
 
-/* UI-02 + UI-03: carrusel horizontal con fotos */
-.acts-grid{display:flex;gap:16px;overflow-x:auto;padding-bottom:16px;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none}
+/* UI-02 + UI-03: carrusel horizontal con fotos + peek de siguiente card */
+.acts-grid-wrap{position:relative}
+.acts-grid-wrap::after{content:'';position:absolute;top:0;right:0;width:48px;height:calc(100% - 16px);background:linear-gradient(to right,transparent,var(--bg));pointer-events:none}
+.acts-grid{display:flex;gap:16px;overflow-x:auto;padding-bottom:16px;padding-right:32px;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none}
 .acts-grid::-webkit-scrollbar{display:none}
 .act-card{flex:0 0 260px;background:var(--card);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-sm);transition:transform 0.2s,box-shadow 0.2s;display:flex;flex-direction:column;scroll-snap-align:start}
 .act-card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
@@ -301,8 +305,8 @@ h1,h2,h3{line-height:1.2}
   .mes-tab{height:44px;padding:0 14px}
   .hero-yr{height:44px;min-width:44px;padding:0 16px}
 
-  /* cards panoramas — más angostas en mobile para ver 1.5 cards */
-  .act-card{flex:0 0 220px}
+  /* cards panoramas — 82vw para que siempre asoma la siguiente */
+  .act-card{flex:0 0 82vw}
 
   .f-card{grid-template-columns:64px 1fr}.f-right{display:none}
   .ley-card{grid-template-columns:1fr}
