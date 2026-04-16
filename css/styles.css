@@ -108,7 +108,9 @@ nav{background:var(--azul);display:flex;align-items:center;justify-content:space
 .mes-tab.has.active{background:var(--rojo);border-color:var(--rojo);color:#fff}
 
 /* LIST */
-#listView{display:flex;flex-direction:column;gap:9px;max-height:580px;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.list-wrap{position:relative}
+.list-wrap::after{content:'';position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none;z-index:1}
+#listView{display:flex;flex-direction:column;gap:9px;max-height:480px;overflow-y:auto;padding-right:4px;padding-bottom:16px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 #listView::-webkit-scrollbar{width:5px}
 #listView::-webkit-scrollbar-track{background:transparent}
 #listView::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
