@@ -305,8 +305,8 @@ h1,h2,h3{line-height:1.2}
   .mes-tab{height:44px;padding:0 14px}
   .hero-yr{height:44px;min-width:44px;padding:0 16px}
 
-  /* cards panoramas — 82vw para que siempre asoma la siguiente */
-  .act-card{flex:0 0 82vw}
+  /* cards panoramas — muestra ~1.5 cards en mobile */
+  .act-card{flex:0 0 62vw}
 
   .f-card{grid-template-columns:64px 1fr}.f-right{display:none}
   .ley-card{grid-template-columns:1fr}
