@@ -30,7 +30,10 @@
 <!-- NAV -->
 <nav>
   <div class="nav-logo" onclick="showPage('home')"><span>Feriados</span> Chile</div>
-  <div class="nav-links">
+  <button class="hamburger" id="hamburger" aria-label="Abrir menú" aria-expanded="false" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-links" id="navLinks">
     <button class="nav-link active" onclick="showPage('home')" id="nl-home">Feriados</button>
     <button class="nav-link" onclick="showPage('faq')" id="nl-faq">FAQ</button>
     <button class="nav-link" onclick="showPage('leyes')" id="nl-leyes">Leyes</button>
@@ -41,6 +44,8 @@
     </div>
   </div>
 </nav>
+<div class="nav-overlay" id="navOverlay" onclick="toggleMenu()"></div>
+<button class="back-to-top" id="backToTop" aria-label="Volver arriba" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
 <!-- HOME PAGE -->
 <div class="page active" id="page-home">

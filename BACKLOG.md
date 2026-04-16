@@ -4,14 +4,38 @@
 
 ---
 
-## 🔥 Prioridad Alta — Próxima sesión
+## 🔥 Prioridad 1 — Sprint 1 (Mobile/Responsive)
+
+> Product Backlog v1.0 · 2026-04-16 · Épicas: Navegación + Layout
+
+### 🧭 Épica: Navegación
+
+| # | Historia | Prioridad | Categoría | SP | Estado | Criterios de aceptación |
+|---|---|---|---|---|---|---|
+| NAV-01 | Menú hamburguesa que se abre/cierra fácilmente en mobile | Crítica | Must Have | 5 | ✅ Hecho | Abre/cierra con un toque · Ícono visible en <768px · Overlay semitransparente · Cierra al tocar fuera |
+| NAV-02 | Ítems del menú con área de toque mínima 48px | Alta | Must Have | 3 | ✅ Hecho | Alto mínimo 48px · Espaciado ≥8px · Sin superposición táctil · WCAG 2.5.5 |
+| NAV-03 | Menú sticky al hacer scroll | Alta | Must Have | 3 | ✅ Hecho | Header fijo con z-index correcto · No cubre contenido · Funciona en iOS Safari y Chrome Android |
+| NAV-04 | Botón "Volver arriba" flotante | Media | Should Have | 2 | ✅ Hecho | Aparece al bajar 300px · Smooth scroll · No bloquea contenido |
+| NAV-05 | Links de navegación activos resaltados | Media | Should Have | 2 | ✅ Hecho | Color diferenciado · Aplica en menú hamburguesa · Contraste ≥4.5:1 WCAG AA |
+
+### 🖼️ Épica: Layout / Imágenes
+
+| # | Historia | Prioridad | Categoría | SP | Estado | Criterios de aceptación |
+|---|---|---|---|---|---|---|
+| LAY-01 | Imágenes responsive sin desbordamiento | Crítica | Must Have | 5 | ✅ Hecho | max-width:100% · Sin scroll horizontal <375px · loading="lazy" |
+| LAY-02 | Layout multi-columna colapsa a 1 columna en mobile | Crítica | Must Have | 5 | ✅ Hecho | Grid/Flex a 1 col en <768px · Sin overflow horizontal · Padding lateral ≥16px |
+| LAY-03 | Botones CTA con tamaño óptimo para pulgar | Alta | Must Have | 3 | ✅ Hecho | Ancho mínimo 44px · Alto mínimo 44px |
+
+---
+
+## 🗂️ Prioridad Alta — Backlog General
 
 | # | Tarea | Estado | Notas |
 |---|---|---|---|
 | B-01 | Validar que Google Analytics esté recibiendo datos | 🟡 Pendiente | Ir a GA4 > Informes > Tiempo real. Tag: `G-9VSSTEV2N7` |
 | B-02 | Validar cobertura en Google Search Console | 🟡 Pendiente | Verificar sitemap indexado y sin errores de rastreo |
 | T-01 | Refactor limpio pendiente (simplify) | 🟡 Pendiente | Ver detalles abajo en sección Deuda Técnica |
-| D-01 | Revisar diseño mobile — nav y sección panoramas | 🟡 Pendiente | Nav comprimido en < 380px; sección panoramas no se ha visto en móvil |
+| D-01 | Revisar diseño mobile — nav y sección panoramas | 🔄 En progreso | Cubierto por Sprint 1 Mobile |
 
 ---
 

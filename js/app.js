@@ -318,8 +318,37 @@ function showPage(p){
   document.getElementById('page-'+p).classList.add('active');
   document.getElementById('nl-'+p).classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
+  closeMenu();
 }
 function toggleFaq(btn){btn.parentElement.classList.toggle('open');}
+
+// NAV-01: Menú hamburguesa
+function toggleMenu(){
+  const ham=document.getElementById('hamburger');
+  const nav=document.getElementById('navLinks');
+  const overlay=document.getElementById('navOverlay');
+  const isOpen=nav.classList.contains('open');
+  if(isOpen){closeMenu();}
+  else{
+    nav.classList.add('open');
+    ham.classList.add('open');
+    overlay.classList.add('open');
+    ham.setAttribute('aria-expanded','true');
+    document.body.style.overflow='hidden';
+  }
+}
+function closeMenu(){
+  document.getElementById('navLinks').classList.remove('open');
+  document.getElementById('hamburger').classList.remove('open');
+  document.getElementById('navOverlay').classList.remove('open');
+  document.getElementById('hamburger').setAttribute('aria-expanded','false');
+  document.body.style.overflow='';
+}
+
+// NAV-04: Botón volver arriba
+window.addEventListener('scroll',()=>{
+  document.getElementById('backToTop').classList.toggle('visible',window.scrollY>300);
+});
 
 // ===================== CONFETTI =====================
 const confEl=document.getElementById('confetti');

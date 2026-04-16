@@ -7,18 +7,31 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-/* NAV */
-nav{background:var(--azul);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,0.18)}
+/* NAV — NAV-03: sticky con z-index correcto */
+nav{background:var(--azul);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:60px;position:sticky;top:0;z-index:200;box-shadow:0 2px 16px rgba(0,0,0,0.18)}
 .nav-logo{font-family:'Fraunces',serif;font-size:20px;color:#fff;display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap}
 .nav-logo span{color:var(--amarillo)}
 .nav-links{display:flex;gap:4px;align-items:center}
-.nav-link{color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;padding:6px 14px;border-radius:20px;cursor:pointer;border:none;background:transparent;font-family:'Nunito',sans-serif;transition:all 0.2s;white-space:nowrap}
+/* NAV-02: área de toque mínima 48px, NAV-05: activo resaltado con contraste */
+.nav-link{color:rgba(255,255,255,0.75);font-size:13px;font-weight:700;padding:0 14px;height:48px;min-width:48px;display:inline-flex;align-items:center;justify-content:center;border-radius:20px;cursor:pointer;border:none;background:transparent;font-family:'Nunito',sans-serif;transition:all 0.2s;white-space:nowrap}
 .nav-link:hover{color:#fff;background:rgba(255,255,255,0.1)}
 .nav-link.active{color:var(--azul);background:var(--amarillo)}
 
-/* YEAR SELECTOR in nav */
+/* NAV-01: Menú hamburguesa */
+.hamburger{display:none;flex-direction:column;justify-content:center;align-items:center;gap:5px;width:48px;height:48px;background:transparent;border:none;cursor:pointer;padding:8px;border-radius:8px;transition:background 0.2s}
+.hamburger:hover{background:rgba(255,255,255,0.1)}
+.hamburger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;transition:all 0.3s}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* NAV-01: Overlay */
+.nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:190;opacity:0;transition:opacity 0.25s}
+.nav-overlay.open{display:block;opacity:1}
+
+/* YEAR SELECTOR in nav — NAV-02: tap targets ≥48px */
 .year-selector{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.1);border-radius:24px;padding:4px 6px;margin-left:8px}
-.yr-btn{border:none;background:transparent;color:rgba(255,255,255,0.6);font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;padding:4px 12px;border-radius:20px;cursor:pointer;transition:all 0.2s}
+.yr-btn{border:none;background:transparent;color:rgba(255,255,255,0.6);font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;padding:0 12px;height:40px;min-width:48px;display:inline-flex;align-items:center;justify-content:center;border-radius:20px;cursor:pointer;transition:all 0.2s}
 .yr-btn:hover{color:#fff;background:rgba(255,255,255,0.15)}
 .yr-btn.active{background:var(--amarillo);color:var(--azul)}
 
@@ -204,11 +217,67 @@ footer a{color:var(--amarillo);text-decoration:none;font-weight:700}
 .year-fade{animation:yearFade 0.4s ease}
 @keyframes yearFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-@media(max-width:640px){
+/* NAV-04: Botón volver arriba */
+.back-to-top{position:fixed;bottom:24px;right:20px;width:44px;height:44px;background:var(--azul);color:#fff;border:none;border-radius:50%;font-size:18px;cursor:pointer;box-shadow:var(--shadow);display:none;align-items:center;justify-content:center;z-index:150;transition:background 0.2s,transform 0.2s}
+.back-to-top:hover{background:var(--azul-m);transform:translateY(-2px)}
+.back-to-top.visible{display:flex}
+
+/* ===================== RESPONSIVE — Sprint 1 Mobile ===================== */
+
+/* LAY-01: imágenes responsive */
+img{max-width:100%;height:auto;display:block}
+
+@media(max-width:768px){
+  /* NAV-01: mostrar hamburguesa, ocultar links */
+  .hamburger{display:flex}
+  .nav-links{
+    display:none;
+    position:fixed;
+    top:60px;left:0;right:0;bottom:0;
+    background:var(--azul);
+    flex-direction:column;
+    align-items:flex-start;
+    padding:16px 0;
+    gap:0;
+    z-index:195;
+    overflow-y:auto;
+  }
+  .nav-links.open{display:flex}
+
+  /* NAV-02: ítems con altura mínima 48px y espaciado */
+  .nav-link{width:100%;height:48px;border-radius:0;padding:0 24px;font-size:15px;justify-content:flex-start}
+  .nav-link + .nav-link{margin-top:2px}
+
+  /* NAV-05: activo bien diferenciado en menú mobile */
+  .nav-link.active{background:var(--amarillo);color:var(--azul);border-radius:0}
+
+  .year-selector{width:100%;background:rgba(255,255,255,0.08);border-radius:0;margin:8px 0 0;padding:8px 16px}
+  .yr-btn{flex:1;height:44px}
+
+  /* LAY-02: layout a 1 columna */
+  .stats-wrap{grid-template-columns:1fr 1fr;padding:0 16px}
+  .content{padding:28px 16px 80px}
+  .acts-grid{grid-template-columns:1fr}
+  .cal-grid{grid-template-columns:1fr}
+  .proximo-wrap{padding:0 16px}
+  .proximo{padding:18px 20px}
+  .proximo-right .dias-num{font-size:44px}
+
+  /* LAY-03: botones CTA mínimo 44px */
+  .view-btn{height:44px;min-width:44px;padding:0 14px}
+  .sw-toggle{height:44px;padding:0 16px}
+  .mes-tab{height:44px;padding:0 14px}
+  .act-filter{height:44px;padding:0 14px}
+  .hero-yr{height:44px;min-width:44px;padding:0 16px}
+
   .f-card{grid-template-columns:64px 1fr}.f-right{display:none}
-  .stats-wrap{grid-template-columns:repeat(2,1fr)}
   .ley-card{grid-template-columns:1fr}
-  nav{padding:0 12px}.nav-link{font-size:11px;padding:5px 9px}
-  .yr-btn{font-size:11px;padding:3px 9px}
-  .hero-year-pills{gap:6px}.hero-yr{font-size:12px;padding:5px 14px}
+  nav{padding:0 16px}
+  .hero-year-pills{gap:6px}
+}
+
+@media(max-width:640px){
+  .stats-wrap{grid-template-columns:repeat(2,1fr)}
+  .yr-btn{font-size:11px}
+  .hero-year-pills{gap:6px}.hero-yr{font-size:12px}
 }

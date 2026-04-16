@@ -6,6 +6,30 @@
 
 ---
 
+## v1.4 — Sprint 1 Mobile/Responsive · 2026-04-16
+
+| Campo | Detalle |
+|---|---|
+| **Hash** | `pendiente` |
+| **Estado** | ✅ En producción |
+
+### Cambios
+- NAV-01: Menú hamburguesa con overlay y animación (visible en <768px)
+- NAV-02: Tap targets mínimo 48px en todos los ítems de nav
+- NAV-03: Nav sticky con z-index 200, no cubre contenido
+- NAV-04: Botón "volver arriba" flotante (aparece al bajar 300px)
+- NAV-05: Link activo resaltado en amarillo en menú mobile
+- LAY-01: `img { max-width:100% }` global
+- LAY-02: Layout colapsa a 1 columna en <768px, padding lateral 16px
+- LAY-03: Todos los botones CTA con altura mínima 44px
+
+### Rollback
+```bash
+git reset --hard 923d9c0   # vuelve a v1.3 (arquitectura separada)
+```
+
+---
+
 ## v1.3 — Arquitectura separada + seguridad · 2026-04-16
 
 | Campo | Detalle |
