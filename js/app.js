@@ -304,7 +304,7 @@ function renderActividades(cat){
   grid.innerHTML='';
   lista.forEach(a=>{
     const color=CAT_COLORS[a.cat]||'var(--azul)';
-    const imgUrl=`https://images.unsplash.com/photo-${a.foto}?w=480&q=65&auto=format&fit=crop`;
+    const imgUrl=`https://images.unsplash.com/photo-${a.foto}?w=480&q=70&auto=format&fit=crop&crop=entropy`;
     const card=document.createElement('div');
     card.className='act-card';
     card.innerHTML=`<div class="act-cover"><img src="${imgUrl}" alt="${a.nombre}" loading="lazy"><span class="act-cat" style="background:${color}">${CAT_LABELS[a.cat]}</span></div><div class="act-top"><div class="act-nombre">${a.nombre}</div><div class="act-lugar">${a.ubicacion}</div></div><div class="act-body"><div class="act-desc">${a.desc}</div><a class="act-link" href="${a.url}" target="_blank">Ver más →</a></div>`;
