@@ -559,13 +559,13 @@ function generateMiniCalendar(startDate, opp) {
   // Días del mes
   for (let day = 1; day <= daysInMonth; day++) {
     const fecha = new Date(anio, mes, day);
-    const isFeriado = isFeriado(fecha, feriados);
+    const isFer = isFeriado(fecha, feriados);
     const isSandwich = allSandwiches.some(s => s.toDateString() === fecha.toDateString());
     const isFDS = fecha.getDay() === 0 || fecha.getDay() === 6;
     const inRange = fecha >= opp.startDate && fecha <= new Date(opp.startDate.getTime() + opp.daysFree * 24 * 60 * 60 * 1000);
 
     let clase = 'vac-cal-day';
-    if (isFeriado) clase += ' holiday';
+    if (isFer) clase += ' holiday';
     else if (isFDS || isSandwich) clase += ' rest';
     else if (inRange) clase += ' range';
     else clase += ' work';
