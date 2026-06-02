@@ -445,13 +445,25 @@ function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
 }
 
 function openVacacionesModal() {
-  document.getElementById('vacModal').classList.add('open');
+  const modal = document.getElementById('vacModal');
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
   renderVacacionesModal();
 }
 
 function closeVacacionesModal() {
-  document.getElementById('vacModal').classList.remove('open');
+  const modal = document.getElementById('vacModal');
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
 }
+
+// Cerrar modal al hacer click afuera
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('vacModal');
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) closeVacacionesModal();
+  });
+});
 
 function renderVacacionesModal() {
   const vacToggleSandwich = document.getElementById('vacToggleSandwich');
