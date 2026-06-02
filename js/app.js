@@ -493,7 +493,18 @@ function renderVacacionesExpanded() {
     const startStr = `${DIAS[opp.startDate.getDay()]} ${opp.startDate.getDate()}<br>${MESES_F[opp.startDate.getMonth()]}`;
     const endStr = `${DIAS[endDate.getDay()]} ${endDate.getDate()}<br>${MESES_F[endDate.getMonth()]}`;
 
-    // Encontrar qué feriados están en la ventana
+    // Contar feriados y fines de semana en la ventana
+    let holidayCount = 0, weekendCount = 0;
+    let current = new Date(opp.startDate);
+    while (current <= endDate) {
+      const isFer = isFeriado(current, feriados);
+      const isFDS = current.getDay() === 0 || current.getDay() === 6;
+      if (isFer) holidayCount++;
+      if (isFDS) weekendCount++;
+      current.setDate(current.getDate() + 1);
+    }
+
+    // Encontrar qué feriados están en la ventana (para descripción)
     const windowStart = new Date(opp.startDate);
     windowStart.setDate(windowStart.getDate() - 30);
     const windowEnd = new Date(endDate);
@@ -502,42 +513,50 @@ function renderVacacionesExpanded() {
     const feriadosEnVentana = feriados.filter(f => f.fecha >= windowStart && f.fecha <= windowEnd).map(f => f.nombre);
     const feriasText = feriadosEnVentana.slice(0, 2).join(', ') + (feriadosEnVentana.length > 2 ? '...' : '');
 
+    // Generar fórmula horizontal
+    let formulaHTML = `
+      <div class="vac-formula-box">
+        <span class="vac-formula-value">${opp.daysFree}</span>
+        <span class="vac-formula-label">vac</span>
+      </div>
+      <div class="vac-formula-box operator">+</div>
+      <div class="vac-formula-box">
+        <span class="vac-formula-value">${holidayCount}</span>
+        <span class="vac-formula-label">feriado${holidayCount !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="vac-formula-box operator">+</div>
+      <div class="vac-formula-box">
+        <span class="vac-formula-value">${weekendCount}</span>
+        <span class="vac-formula-label">fds</span>
+      </div>
+    `;
+
+    if (daysAvailable > 0) {
+      formulaHTML += `
+        <div class="vac-formula-box operator">+</div>
+        <div class="vac-formula-box">
+          <span class="vac-formula-value">${daysAvailable}</span>
+          <span class="vac-formula-label">disp</span>
+        </div>
+      `;
+    }
+
+    formulaHTML += `
+      <div class="vac-formula-box equals"></div>
+      <div class="vac-formula-box">
+        <span class="vac-formula-value">${totalFormula}</span>
+        <span class="vac-formula-label">días</span>
+      </div>
+    `;
+
     const item = document.createElement('div');
     item.className = 'vac-item';
     item.innerHTML = `
       <div class="vac-item-rank">#${idx + 1} — ${startStr.replace('<br>', ' de ')}</div>
 
-      <!-- FORMULA: Días que tomas + Feriados = Días de descanso -->
+      <!-- FORMULA HORIZONTAL -->
       <div class="vac-formula">
-        <div class="vac-formula-box">
-          <span class="vac-formula-label">Días que tomas</span>
-          <span class="vac-formula-value">${opp.daysFree}</span>
-          <span class="vac-formula-desc">vacaciones</span>
-        </div>
-
-        <div class="vac-formula-box">
-          <span class="vac-formula-label">+ Feriados</span>
-          <span class="vac-formula-value">+</span>
-          <span class="vac-formula-desc">${feriasText}</span>
-        </div>
-
-        <div class="vac-formula-box">
-          <span class="vac-formula-label">+ Fin de semana</span>
-          <span class="vac-formula-value">+</span>
-          <span class="vac-formula-desc">sábado/domingo</span>
-        </div>
-
-        ${daysAvailable > 0 ? `<div class="vac-formula-box">
-          <span class="vac-formula-label">+ Días disponibles</span>
-          <span class="vac-formula-value">+</span>
-          <span class="vac-formula-desc">${daysAvailable} día${daysAvailable > 1 ? 's' : ''}</span>
-        </div>` : ''}
-
-        <div class="vac-formula-box equals">
-          <span class="vac-formula-label">= Total descanso</span>
-          <span class="vac-formula-value">${totalFormula}</span>
-          <span class="vac-formula-desc">${(totalFormula / opp.daysFree).toFixed(1)}x mejor</span>
-        </div>
+        ${formulaHTML}
       </div>
 
       <!-- DESCRIPCIÓN -->
