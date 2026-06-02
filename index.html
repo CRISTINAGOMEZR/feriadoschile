@@ -144,27 +144,22 @@
     </div>
 
     <div style="height:40px"></div>
-    <button class="vac-btn-main" onclick="openVacacionesModal()">Recomiéndame mis vacaciones</button>
-  </div>
+    <button class="vac-expand-btn" id="vacExpandBtn" onclick="toggleVacacionesExpanded()">
+      <span class="vac-expand-icon">▼</span>
+      Recomiéndame mis vacaciones
+    </button>
 
-  <!-- Modal de Vacaciones -->
-  <div class="vac-modal" id="vacModal">
-    <div class="vac-modal-content">
-      <button class="vac-modal-close" onclick="closeVacacionesModal()">✕</button>
-      <h2>Recomiéndame mis vacaciones</h2>
-      <p>Encuentra las mejores oportunidades para maximizar tu descanso</p>
-
-      <div class="vac-modal-toggle">
+    <div class="vac-expanded" id="vacExpanded">
+      <div class="vac-expanded-header">
+        <h3>Mejores oportunidades para tus vacaciones</h3>
         <label class="vac-toggle-label">
-          <input type="checkbox" id="vacToggleSandwich" checked onchange="renderVacacionesModal()">
-          <span>Contar los días sandwich como gratis (ya son descanso)</span>
+          <input type="checkbox" id="vacToggleSandwich" checked onchange="renderVacacionesExpanded()">
+          <span>Contar sándwiches como gratis</span>
         </label>
       </div>
-
-      <div class="vac-modal-grid" id="vacGrid"></div>
+      <div class="vac-expanded-grid" id="vacExpandedGrid"></div>
     </div>
   </div>
-</div>
 
 <!-- FAQ -->
 <div class="page" id="page-faq">

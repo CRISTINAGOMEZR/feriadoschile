@@ -444,39 +444,28 @@ function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
   return opportunities.sort((a, b) => b.ratio - a.ratio).slice(0, 20);
 }
 
-function openVacacionesModal() {
-  const modal = document.getElementById('vacModal');
-  modal.classList.add('open');
-  document.body.style.overflow = 'hidden';
-  renderVacacionesModal();
+function toggleVacacionesExpanded() {
+  const expanded = document.getElementById('vacExpanded');
+  const btn = document.getElementById('vacExpandBtn');
+  expanded.classList.toggle('open');
+  btn.setAttribute('aria-expanded', expanded.classList.contains('open'));
+  if (expanded.classList.contains('open')) {
+    renderVacacionesExpanded();
+  }
 }
 
-function closeVacacionesModal() {
-  const modal = document.getElementById('vacModal');
-  modal.classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-// Cerrar modal al hacer click afuera
-document.addEventListener('DOMContentLoaded', () => {
-  const modal = document.getElementById('vacModal');
-  modal?.addEventListener('click', (e) => {
-    if (e.target === modal) closeVacacionesModal();
-  });
-});
-
-function renderVacacionesModal() {
+function renderVacacionesExpanded() {
   const vacToggleSandwich = document.getElementById('vacToggleSandwich');
   const countSandwichAsLibre = vacToggleSandwich.checked;
   const { feriados } = DATA[currentYear];
   const allSandwiches = calcSW(feriados);
 
   const opportunities = findVacationOpportunities(feriados, allSandwiches, countSandwichAsLibre);
-  const grid = document.getElementById('vacGrid');
+  const grid = document.getElementById('vacExpandedGrid');
   grid.innerHTML = '';
 
   if (opportunities.length === 0) {
-    grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 20px">No hay oportunidades óptimas disponibles.</p>';
+    grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 20px;grid-column:1/-1">No hay oportunidades óptimas disponibles.</p>';
     return;
   }
 
@@ -484,35 +473,49 @@ function renderVacacionesModal() {
     const endDate = new Date(opp.startDate);
     endDate.setDate(endDate.getDate() + opp.daysFree - 1);
 
-    const startStr = `${DIAS[opp.startDate.getDay()].substring(0, 3)} ${opp.startDate.getDate()} ${MESES[opp.startDate.getMonth()]}`;
-    const endStr = `${DIAS[endDate.getDay()].substring(0, 3)} ${endDate.getDate()} ${MESES[endDate.getMonth()]}`;
+    const startStr = `${DIAS[opp.startDate.getDay()]} ${opp.startDate.getDate()} de ${MESES_F[opp.startDate.getMonth()]}`;
+    const endStr = `${DIAS[endDate.getDay()]} ${endDate.getDate()} de ${MESES_F[endDate.getMonth()]}`;
 
-    const card = document.createElement('div');
-    card.className = 'vac-card';
-    card.innerHTML = `
-      <div class="vac-rank">#${idx + 1}</div>
-      <div class="vac-dates">
-        <div class="vac-range">${startStr} — ${endStr}</div>
-        <div class="vac-stats">
-          <span class="stat-box">
-            <span class="stat-label">Días libres</span>
-            <span class="stat-value">${opp.daysFree}</span>
-          </span>
-          <span class="stat-box">
-            <span class="stat-label">Días descanso</span>
-            <span class="stat-value">${opp.totalRestDays}</span>
-          </span>
-          <span class="stat-box">
-            <span class="stat-label">Ratio</span>
-            <span class="stat-value">${opp.ratio.toFixed(1)}x</span>
-          </span>
+    // Encontrar qué feriados están en la ventana expandida
+    const windowStart = new Date(opp.startDate);
+    windowStart.setDate(windowStart.getDate() - 30); // Expandir hacia atrás
+    const windowEnd = new Date(endDate);
+    windowEnd.setDate(windowEnd.getDate() + 30); // Expandir hacia adelante
+
+    const feriadosEnVentana = feriados.filter(f => f.fecha >= windowStart && f.fecha <= windowEnd).map(f => f.nombre);
+
+    const item = document.createElement('div');
+    item.className = 'vac-item';
+    item.innerHTML = `
+      <div class="vac-item-header">
+        <span class="vac-rank">#${idx + 1}</span>
+        <span class="vac-dates">${startStr} — ${endStr}</span>
+      </div>
+
+      <div class="vac-item-stats">
+        <div class="vac-stat">
+          <span class="vac-stat-num">${opp.daysFree}</span>
+          <span class="vac-stat-label">Días que tomas</span>
+        </div>
+        <div class="vac-stat">
+          <span class="vac-stat-num">${opp.totalRestDays}</span>
+          <span class="vac-stat-label">Días de descanso</span>
+        </div>
+        <div class="vac-stat">
+          <span class="vac-stat-num">${opp.ratio.toFixed(1)}x</span>
+          <span class="vac-stat-label">Multiplicador</span>
         </div>
       </div>
-      <div class="vac-visual">
-        <div class="vac-timeline">${opp.restDays.map(d => `<div class="vac-day ${d ? 'rest' : 'trabajo'}"></div>`).join('')}</div>
+
+      <div class="vac-item-desc">
+        Tomándote <strong>${opp.daysFree}</strong> día${opp.daysFree > 1 ? 's' : ''} de vacaciones, obtienes <strong>${opp.totalRestDays} días de descanso</strong> aprovechando: <strong>${feriadosEnVentana.slice(0, 2).join(', ')}</strong>${feriadosEnVentana.length > 2 ? ', y más...' : ''}
+      </div>
+
+      <div class="vac-timeline-inline">
+        ${opp.restDays.map(d => `<div class="vac-day-inline ${d ? 'rest' : 'trabajo'}"></div>`).join('')}
       </div>
     `;
-    grid.appendChild(card);
+    grid.appendChild(item);
   });
 }
 
