@@ -353,28 +353,35 @@ window.addEventListener('scroll',()=>{
 });
 
 // ===================== VACACIONES =====================
-function calcRestDays(startDate, endDate, feriados, sandwiches, countSandwichAsLibre) {
-  const restDays = [];
-  let current = new Date(startDate);
-  current.setHours(0, 0, 0, 0);
+function isRestDay(d, feriados, sandwiches, countSandwichAsLibre) {
+  const isFer = isFeriado(d, feriados);
+  const isSW = sandwiches.some(s => s.toDateString() === d.toDateString());
+  const isFDS = d.getDay() === 0 || d.getDay() === 6;
+  if (isFer || isFDS) return true;
+  if (isSW && countSandwichAsLibre) return true;
+  return false;
+}
 
-  while (current <= endDate) {
-    const key = current.toDateString();
-    const isFer = isFeriado(current, feriados);
-    const isSW = sandwiches.some(s => s.toDateString() === key);
-    const isFDS = current.getDay() === 0 || current.getDay() === 6;
-
-    if (isFer || isFDS) {
-      restDays.push(true);
-    } else if (isSW && countSandwichAsLibre) {
-      restDays.push(true);
-    } else {
-      restDays.push(false);
-    }
-
-    current.setDate(current.getDate() + 1);
+function countRestWindow(d, feriados, sandwiches, countSandwichAsLibre) {
+  let start = new Date(d), end = new Date(d);
+  let back = new Date(d);
+  back.setDate(back.getDate() - 1);
+  while (isRestDay(back, feriados, sandwiches, countSandwichAsLibre)) {
+    start = new Date(back);
+    back.setDate(back.getDate() - 1);
   }
-  return restDays;
+  let fwd = new Date(d);
+  fwd.setDate(fwd.getDate() + 1);
+  while (isRestDay(fwd, feriados, sandwiches, countSandwichAsLibre)) {
+    end = new Date(fwd);
+    fwd.setDate(fwd.getDate() + 1);
+  }
+  let cnt = 0, cur = new Date(start);
+  while (cur <= end) {
+    cnt++;
+    cur.setDate(cur.getDate() + 1);
+  }
+  return {start, end, count: cnt};
 }
 
 function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
@@ -382,14 +389,14 @@ function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
   const year = currentYear;
   const startOfYear = new Date(year, 0, 1);
   const endOfYear = new Date(year, 11, 31);
+  const seen = new Set();
 
   for (let daysFree = 1; daysFree <= 10; daysFree++) {
     const current = new Date(startOfYear);
 
     while (current <= endOfYear) {
-      const key = current.toDateString();
       const isFer = isFeriado(current, feriados);
-      const isSW = sandwiches.some(s => s.toDateString() === key);
+      const isSW = sandwiches.some(s => s.toDateString() === current.toDateString());
       const isFDS = current.getDay() === 0 || current.getDay() === 6;
 
       let canStartHere = false;
@@ -402,28 +409,31 @@ function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
       }
 
       if (canStartHere) {
-        const startDate = new Date(current);
-        const endDate = new Date(current);
-        endDate.setDate(endDate.getDate() + daysFree - 1);
+        const windowStart = new Date(current);
+        const windowEnd = new Date(current);
+        windowEnd.setDate(windowEnd.getDate() + daysFree - 1);
 
-        if (endDate <= endOfYear) {
-          const restDays = calcRestDays(startDate, endDate, feriados, sandwiches, countSandwichAsLibre);
-          const totalRestDays = restDays.filter(x => x).length;
+        if (windowEnd <= endOfYear) {
+          const {start: expandedStart, end: expandedEnd, count: totalRestDays} = countRestWindow(current, feriados, sandwiches, countSandwichAsLibre);
           const ratio = totalRestDays / daysFree;
+          const oppKey = `${windowStart.toDateString()}-${daysFree}`;
 
-          if (totalRestDays > daysFree && ratio > 1) {
-            const oppKey = `${startDate.toDateString()}-${daysFree}`;
-
-            if (!opportunities.some(o => o.key === oppKey)) {
-              opportunities.push({
-                key: oppKey,
-                startDate: new Date(startDate),
-                daysFree: daysFree,
-                totalRestDays: totalRestDays,
-                ratio: ratio,
-                restDays: restDays
-              });
+          if (totalRestDays > daysFree && !seen.has(oppKey)) {
+            seen.add(oppKey);
+            let restDays = [];
+            let c = new Date(expandedStart);
+            while (c <= expandedEnd) {
+              restDays.push(true);
+              c.setDate(c.getDate() + 1);
             }
+            opportunities.push({
+              key: oppKey,
+              startDate: new Date(windowStart),
+              daysFree: daysFree,
+              totalRestDays: totalRestDays,
+              ratio: ratio,
+              restDays: restDays
+            });
           }
         }
       }
