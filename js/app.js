@@ -445,31 +445,45 @@ function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
 }
 
 function toggleVacacionesExpanded() {
+  console.log('toggleVacacionesExpanded() called');
   const expanded = document.getElementById('vacExpanded');
   const btn = document.getElementById('vacExpandBtn');
+  console.log('Found elements:', { expanded: !!expanded, btn: !!btn });
   expanded.classList.toggle('open');
   btn.setAttribute('aria-expanded', expanded.classList.contains('open'));
+  console.log('Toggled class, isOpen:', expanded.classList.contains('open'));
   if (expanded.classList.contains('open')) {
+    console.log('Calling renderVacacionesExpanded...');
     renderVacacionesExpanded();
+    console.log('renderVacacionesExpanded completed');
   }
 }
 
 function renderVacacionesExpanded() {
-  const vacToggleSandwich = document.getElementById('vacToggleSandwich');
-  const countSandwichAsLibre = vacToggleSandwich.checked;
-  const { feriados } = DATA[currentYear];
-  const allSandwiches = calcSW(feriados);
+  console.log('renderVacacionesExpanded() started');
+  try {
+    const vacToggleSandwich = document.getElementById('vacToggleSandwich');
+    console.log('vacToggleSandwich found:', !!vacToggleSandwich);
+    const countSandwichAsLibre = vacToggleSandwich.checked;
+    const { feriados } = DATA[currentYear];
+    console.log('Got feriados:', feriados.length);
+    const allSandwiches = calcSW(feriados);
+    console.log('Got sandwiches:', allSandwiches.length);
 
-  const opportunities = findVacationOpportunities(feriados, allSandwiches, countSandwichAsLibre);
-  const grid = document.getElementById('vacExpandedGrid');
-  grid.innerHTML = '';
+    console.log('Calling findVacationOpportunities...');
+    const opportunities = findVacationOpportunities(feriados, allSandwiches, countSandwichAsLibre);
+    console.log('Found opportunities:', opportunities.length);
 
-  if (opportunities.length === 0) {
-    grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 20px;grid-column:1/-1">No hay oportunidades óptimas disponibles.</p>';
-    return;
-  }
+    const grid = document.getElementById('vacExpandedGrid');
+    grid.innerHTML = '';
 
-  opportunities.forEach((opp, idx) => {
+    if (opportunities.length === 0) {
+      console.log('No opportunities, showing message');
+      grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 20px;grid-column:1/-1">No hay oportunidades óptimas disponibles.</p>';
+      return;
+    }
+
+    opportunities.forEach((opp, idx) => {
     const endDate = new Date(opp.startDate);
     endDate.setDate(endDate.getDate() + opp.daysFree - 1);
 
@@ -533,6 +547,15 @@ function renderVacacionesExpanded() {
     `;
     grid.appendChild(item);
   });
+  console.log('renderVacacionesExpanded() completed successfully');
+  } catch (err) {
+    console.error('ERROR in renderVacacionesExpanded:', err.message);
+    console.error('Stack:', err.stack);
+    const grid = document.getElementById('vacExpandedGrid');
+    if (grid) {
+      grid.innerHTML = '<p style="color:red;padding:20px"><strong>Error:</strong> ' + err.message + '</p>';
+    }
+  }
 }
 
 function generateMiniCalendar(startDate, opp) {
