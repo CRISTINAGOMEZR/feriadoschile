@@ -318,7 +318,6 @@ function showPage(p){
   document.querySelectorAll('.nav-link').forEach(el=>el.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
   document.getElementById('nl-'+p).classList.add('active');
-  if(p==='vacaciones')renderVacaciones();
   window.scrollTo({top:0,behavior:'smooth'});
   closeMenu();
 }
@@ -445,7 +444,16 @@ function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
   return opportunities.sort((a, b) => b.ratio - a.ratio).slice(0, 20);
 }
 
-function renderVacaciones() {
+function openVacacionesModal() {
+  document.getElementById('vacModal').classList.add('open');
+  renderVacacionesModal();
+}
+
+function closeVacacionesModal() {
+  document.getElementById('vacModal').classList.remove('open');
+}
+
+function renderVacacionesModal() {
   const vacToggleSandwich = document.getElementById('vacToggleSandwich');
   const countSandwichAsLibre = vacToggleSandwich.checked;
   const { feriados } = DATA[currentYear];

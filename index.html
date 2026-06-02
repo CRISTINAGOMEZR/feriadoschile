@@ -41,7 +41,6 @@
   </button>
   <div class="nav-links" id="navLinks">
     <button class="nav-link active" onclick="showPage('home')" id="nl-home">Feriados</button>
-    <button class="nav-link" onclick="showPage('vacaciones')" id="nl-vacaciones">Vacaciones</button>
     <button class="nav-link" onclick="showPage('faq')" id="nl-faq">FAQ</button>
     <button class="nav-link" onclick="showPage('leyes')" id="nl-leyes">Leyes</button>
     <div class="year-selector">
@@ -143,24 +142,27 @@
     <div class="acts-grid-wrap">
       <div class="acts-grid" id="actsGrid"></div>
     </div>
-  </div>
-</div>
 
-<!-- VACACIONES -->
-<div class="page" id="page-vacaciones">
-  <div class="page-hero vac-c">
-    <h1>Recomiéndame mis vacaciones</h1>
-    <p>Encuentra las mejores oportunidades para maximizar tu descanso</p>
+    <div style="height:40px"></div>
+    <button class="vac-btn-main" onclick="openVacacionesModal()">Recomiéndame mis vacaciones</button>
   </div>
-  <div class="vac-content">
-    <div class="vac-toggle-wrap">
-      <label class="vac-toggle-label">
-        <input type="checkbox" id="vacToggleSandwich" checked onchange="renderVacaciones()">
-        <span class="toggle-text">Contar los días sandwich como gratis (ya son descanso)</span>
-      </label>
-      <p class="vac-toggle-hint">Si está activado, los sándwiches no cuentan como días libres gastados. Si está desactivado, los sándwiches se cuentan como días de vacaciones.</p>
+
+  <!-- Modal de Vacaciones -->
+  <div class="vac-modal" id="vacModal">
+    <div class="vac-modal-content">
+      <button class="vac-modal-close" onclick="closeVacacionesModal()">✕</button>
+      <h2>Recomiéndame mis vacaciones</h2>
+      <p>Encuentra las mejores oportunidades para maximizar tu descanso</p>
+
+      <div class="vac-modal-toggle">
+        <label class="vac-toggle-label">
+          <input type="checkbox" id="vacToggleSandwich" checked onchange="renderVacacionesModal()">
+          <span>Contar los días sandwich como gratis (ya son descanso)</span>
+        </label>
+      </div>
+
+      <div class="vac-modal-grid" id="vacGrid"></div>
     </div>
-    <div class="vac-grid" id="vacGrid"></div>
   </div>
 </div>
 
