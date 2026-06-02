@@ -487,6 +487,9 @@ function renderVacacionesExpanded() {
     const endDate = new Date(opp.startDate);
     endDate.setDate(endDate.getDate() + opp.daysFree - 1);
 
+    const daysAvailable = parseInt(document.getElementById('vacDaysAvailable').value) || 0;
+    const totalFormula = opp.totalRestDays + daysAvailable;
+
     const startStr = `${DIAS[opp.startDate.getDay()]} ${opp.startDate.getDate()}<br>${MESES_F[opp.startDate.getMonth()]}`;
     const endStr = `${DIAS[endDate.getDay()]} ${endDate.getDate()}<br>${MESES_F[endDate.getMonth()]}`;
 
@@ -524,10 +527,16 @@ function renderVacacionesExpanded() {
           <span class="vac-formula-desc">sábado/domingo</span>
         </div>
 
+        ${daysAvailable > 0 ? `<div class="vac-formula-box">
+          <span class="vac-formula-label">+ Días disponibles</span>
+          <span class="vac-formula-value">+</span>
+          <span class="vac-formula-desc">${daysAvailable} día${daysAvailable > 1 ? 's' : ''}</span>
+        </div>` : ''}
+
         <div class="vac-formula-box equals">
-          <span class="vac-formula-label">= Días de descanso</span>
-          <span class="vac-formula-value">${opp.totalRestDays}</span>
-          <span class="vac-formula-desc">${opp.ratio.toFixed(1)}x mejor</span>
+          <span class="vac-formula-label">= Total descanso</span>
+          <span class="vac-formula-value">${totalFormula}</span>
+          <span class="vac-formula-desc">${(totalFormula / opp.daysFree).toFixed(1)}x mejor</span>
         </div>
       </div>
 
@@ -559,33 +568,32 @@ function renderVacacionesExpanded() {
 }
 
 function generateMiniCalendar(startDate, opp) {
-  const mes = startDate.getMonth();
-  const anio = startDate.getFullYear();
-  const firstDay = new Date(anio, mes, 1);
-  const lastDay = new Date(anio, mes + 1, 0);
-  const startDow = (firstDay.getDay() + 6) % 7; // Lunes = 0
-  const daysInMonth = lastDay.getDate();
-
   const { feriados } = DATA[currentYear];
   const allSandwiches = calcSW(feriados);
 
+  // Calcular el rango de semanas afectadas
+  const windowEnd = new Date(opp.startDate.getTime() + opp.daysFree * 24 * 60 * 60 * 1000);
+
+  // Primera fecha: lunes de la semana que contiene opp.startDate (o antes)
+  const calStart = new Date(opp.startDate);
+  calStart.setDate(calStart.getDate() - ((calStart.getDay() + 6) % 7)); // Ir al lunes
+
+  // Última fecha: domingo de la semana que contiene windowEnd
+  const calEnd = new Date(windowEnd);
+  calEnd.setDate(calEnd.getDate() + (7 - ((calEnd.getDay() + 6) % 7)) % 7); // Ir al domingo
+
   let html = `<div class="vac-mini-calendar">
-    <div class="vac-calendar-header">${MESES_F[mes]} ${anio}</div>
+    <div class="vac-calendar-header">${MESES_F[calStart.getMonth()]} ${calStart.getFullYear()}</div>
     <div class="vac-calendar-grid">
       ${['L','M','M','J','V','S','D'].map(d => `<div class="vac-cal-day-label">${d}</div>`).join('')}`;
 
-  // Días vacíos al inicio
-  for (let i = 0; i < startDow; i++) {
-    html += '<div class="vac-cal-day empty"></div>';
-  }
-
-  // Días del mes
-  for (let day = 1; day <= daysInMonth; day++) {
-    const fecha = new Date(anio, mes, day);
-    const isFer = isFeriado(fecha, feriados);
-    const isSandwich = allSandwiches.some(s => s.toDateString() === fecha.toDateString());
-    const isFDS = fecha.getDay() === 0 || fecha.getDay() === 6;
-    const inRange = fecha >= opp.startDate && fecha <= new Date(opp.startDate.getTime() + opp.daysFree * 24 * 60 * 60 * 1000);
+  // Recorrer solo las semanas afectadas
+  let current = new Date(calStart);
+  while (current <= calEnd) {
+    const isFer = isFeriado(current, feriados);
+    const isSandwich = allSandwiches.some(s => s.toDateString() === current.toDateString());
+    const isFDS = current.getDay() === 0 || current.getDay() === 6;
+    const inRange = current >= opp.startDate && current <= windowEnd;
 
     let clase = 'vac-cal-day';
     if (isFer) clase += ' holiday';
@@ -593,7 +601,8 @@ function generateMiniCalendar(startDate, opp) {
     else if (inRange) clase += ' range';
     else clase += ' work';
 
-    html += `<div class="${clase}" title="${fecha.toDateString()}">${day}</div>`;
+    html += `<div class="${clase}" title="${current.toDateString()}">${current.getDate()}</div>`;
+    current.setDate(current.getDate() + 1);
   }
 
   html += `</div>

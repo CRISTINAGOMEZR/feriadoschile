@@ -341,6 +341,13 @@ h1,h2,h3{line-height:1.2}
 .vac-toggle-label{display:flex;align-items:center;gap:12px;cursor:pointer;font-weight:700;color:var(--text);font-size:14px;white-space:nowrap}
 .vac-toggle-label input{width:20px;height:20px;accent-color:var(--rojo);cursor:pointer}
 
+.vac-days-input-group{display:flex;align-items:center;gap:10px}
+.vac-days-input-group label{font-weight:700;font-size:13px;color:var(--text);white-space:nowrap}
+.vac-days-input-group input{width:50px;padding:8px 10px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-weight:700;text-align:center;color:var(--text);background:white;transition:border-color 0.2s}
+.vac-days-input-group input:focus{outline:none;border-color:var(--rojo)}
+.vac-days-input-group input::-webkit-outer-spin-button,.vac-days-input-group input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.vac-days-input-group input[type=number]{-moz-appearance:textfield}
+
 /* GRID */
 .vac-expanded-grid{display:grid;grid-template-columns:1fr;gap:24px}
 
@@ -389,49 +396,70 @@ h1,h2,h3{line-height:1.2}
 
 /* MOBILE OPTIMIZATION - VACACIONES */
 @media(max-width:768px){
-  .vac-expanded{padding:20px !important}
-  .vac-expanded-header{flex-direction:column;align-items:flex-start;gap:16px}
-  .vac-expanded-header h3{font-size:20px}
+  .vac-expanded{padding:14px !important}
+  .vac-expanded-header{flex-direction:column;align-items:flex-start;gap:12px}
+  .vac-expanded-header h3{font-size:16px}
 
-  .vac-formula{padding:12px;gap:4px}
-  .vac-formula-box{min-width:70px;padding:12px;font-size:13px}
-  .vac-formula-box:not(:last-child)::after{right:-10px;font-size:18px}
-  .vac-formula-box.equals::before{left:-10px;font-size:18px}
-  .vac-formula-label{font-size:8px;margin-bottom:4px}
-  .vac-formula-value{font-size:22px}
-  .vac-formula-desc{font-size:10px}
+  .vac-item{padding:14px;border-radius:14px;margin-bottom:10px}
+  .vac-item-rank{font-size:11px;margin-bottom:10px}
 
-  .vac-mini-calendar{padding:12px;margin:16px 0}
-  .vac-calendar-header{font-size:12px;margin-bottom:10px}
-  .vac-calendar-grid{gap:4px}
-  .vac-cal-day{min-height:28px;font-size:10px}
-  .vac-calendar-legend{font-size:10px;gap:10px;padding:10px 0}
+  .vac-formula{padding:10px;gap:2px;margin:14px 0}
+  .vac-formula-box{min-width:55px;padding:9px 7px;font-size:11px}
+  .vac-formula-box:not(:last-child)::after{right:-8px;font-size:15px}
+  .vac-formula-box.equals::before{left:-8px;font-size:15px}
+  .vac-formula-label{font-size:7px;margin-bottom:3px}
+  .vac-formula-value{font-size:17px}
+  .vac-formula-desc{font-size:9px}
+
+  .vac-item-desc{font-size:12px;padding:10px;margin:12px 0;border-radius:6px}
+  .vac-item-desc strong{font-size:13px}
+
+  .vac-mini-calendar{padding:8px;margin:10px 0}
+  .vac-calendar-header{font-size:11px;margin-bottom:8px}
+  .vac-calendar-grid{gap:3px;margin-bottom:8px}
+  .vac-cal-day{min-height:26px;font-size:9px}
+  .vac-cal-day-label{font-size:8px}
+  .vac-calendar-legend{font-size:9px;gap:6px;padding:6px 0}
   .vac-legend-dot{width:10px;height:10px}
 
-  .vac-item-desc{font-size:13px;padding:12px}
-  .vac-item{padding:18px}
+  .vac-timeline-inline{gap:1px;margin-top:8px}
+  .vac-day-inline{width:12px;height:12px}
+
+  .vac-toggle-label{font-size:11px;gap:6px}
 }
 
 @media(max-width:480px){
-  .vac-expand-btn{padding:14px 20px;font-size:14px;gap:8px}
-  .vac-expanded{padding:16px !important}
-  .vac-expanded-header h3{font-size:18px}
+  .vac-expand-btn{padding:12px 18px;font-size:13px;gap:6px}
+  .vac-expanded{padding:12px !important}
+  .vac-expanded-header{gap:10px}
+  .vac-expanded-header h3{font-size:15px}
 
-  .vac-formula{padding:10px;margin:16px 0;flex-direction:column;gap:8px}
-  .vac-formula-box{width:100%;padding:10px;margin:0}
+  .vac-item{padding:12px;border-radius:12px;margin-bottom:8px}
+  .vac-item-rank{font-size:10px;margin-bottom:8px}
+
+  .vac-formula{padding:8px;margin:10px 0;flex-direction:column;gap:6px}
+  .vac-formula-box{width:100%;padding:8px;margin:0;min-width:unset}
   .vac-formula-box:not(:last-child)::after{display:none}
   .vac-formula-box.equals::before{display:none}
-  .vac-formula-value{font-size:20px}
-  .vac-formula-label{font-size:7px}
-  .vac-formula-desc{font-size:9px}
+  .vac-formula-value{font-size:16px}
+  .vac-formula-label{font-size:6px}
+  .vac-formula-desc{font-size:8px}
 
-  .vac-formula::after{content:'';order:100;width:100%;text-align:center;font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:var(--rojo);margin:8px 0}
+  .vac-mini-calendar{padding:6px;margin:8px 0}
+  .vac-calendar-header{font-size:10px;margin-bottom:6px}
+  .vac-calendar-grid{gap:2px;margin-bottom:6px}
+  .vac-cal-day{min-height:24px;font-size:8px}
+  .vac-cal-day-label{font-size:7px}
+  .vac-calendar-legend{font-size:8px;gap:4px;padding:4px 0}
 
-  .vac-mini-calendar{padding:10px;margin:12px 0}
-  .vac-cal-day{min-height:24px;font-size:9px}
+  .vac-timeline-inline{gap:0.5px}
+  .vac-day-inline{width:10px;height:10px}
 
-  .vac-item-desc{font-size:12px;padding:10px}
-  .vac-item{padding:14px}
+  .vac-item-desc{font-size:11px;padding:8px;margin:10px 0}
+  .vac-item-desc strong{font-size:12px}
+
+  .vac-toggle-label{font-size:10px;gap:5px}
+  .vac-toggle-label input{width:16px;height:16px}
 }
 
 /* TYP-05: orientación landscape en mobile */
