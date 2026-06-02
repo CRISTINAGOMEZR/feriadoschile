@@ -473,44 +473,57 @@ function renderVacacionesExpanded() {
     const endDate = new Date(opp.startDate);
     endDate.setDate(endDate.getDate() + opp.daysFree - 1);
 
-    const startStr = `${DIAS[opp.startDate.getDay()]} ${opp.startDate.getDate()} de ${MESES_F[opp.startDate.getMonth()]}`;
-    const endStr = `${DIAS[endDate.getDay()]} ${endDate.getDate()} de ${MESES_F[endDate.getMonth()]}`;
+    const startStr = `${DIAS[opp.startDate.getDay()]} ${opp.startDate.getDate()}<br>${MESES_F[opp.startDate.getMonth()]}`;
+    const endStr = `${DIAS[endDate.getDay()]} ${endDate.getDate()}<br>${MESES_F[endDate.getMonth()]}`;
 
-    // Encontrar qué feriados están en la ventana expandida
+    // Encontrar qué feriados están en la ventana
     const windowStart = new Date(opp.startDate);
-    windowStart.setDate(windowStart.getDate() - 30); // Expandir hacia atrás
+    windowStart.setDate(windowStart.getDate() - 30);
     const windowEnd = new Date(endDate);
-    windowEnd.setDate(windowEnd.getDate() + 30); // Expandir hacia adelante
+    windowEnd.setDate(windowEnd.getDate() + 30);
 
     const feriadosEnVentana = feriados.filter(f => f.fecha >= windowStart && f.fecha <= windowEnd).map(f => f.nombre);
+    const feriasText = feriadosEnVentana.slice(0, 2).join(', ') + (feriadosEnVentana.length > 2 ? '...' : '');
 
     const item = document.createElement('div');
     item.className = 'vac-item';
     item.innerHTML = `
-      <div class="vac-item-header">
-        <span class="vac-rank">#${idx + 1}</span>
-        <span class="vac-dates">${startStr} — ${endStr}</span>
+      <div class="vac-item-rank">#${idx + 1} — ${startStr.replace('<br>', ' de ')}</div>
+
+      <!-- FORMULA: Días que tomas + Feriados = Días de descanso -->
+      <div class="vac-formula">
+        <div class="vac-formula-box">
+          <span class="vac-formula-label">Días que tomas</span>
+          <span class="vac-formula-value">${opp.daysFree}</span>
+          <span class="vac-formula-desc">vacaciones</span>
+        </div>
+
+        <div class="vac-formula-box">
+          <span class="vac-formula-label">+ Feriados</span>
+          <span class="vac-formula-value">+</span>
+          <span class="vac-formula-desc">${feriasText}</span>
+        </div>
+
+        <div class="vac-formula-box">
+          <span class="vac-formula-label">+ Fin de semana</span>
+          <span class="vac-formula-value">+</span>
+          <span class="vac-formula-desc">sábado/domingo</span>
+        </div>
+
+        <div class="vac-formula-box equals">
+          <span class="vac-formula-label">= Días de descanso</span>
+          <span class="vac-formula-value">${opp.totalRestDays}</span>
+          <span class="vac-formula-desc">${opp.ratio.toFixed(1)}x mejor</span>
+        </div>
       </div>
 
-      <div class="vac-item-stats">
-        <div class="vac-stat">
-          <span class="vac-stat-num">${opp.daysFree}</span>
-          <span class="vac-stat-label">Días que tomas</span>
-        </div>
-        <div class="vac-stat">
-          <span class="vac-stat-num">${opp.totalRestDays}</span>
-          <span class="vac-stat-label">Días de descanso</span>
-        </div>
-        <div class="vac-stat">
-          <span class="vac-stat-num">${opp.ratio.toFixed(1)}x</span>
-          <span class="vac-stat-label">Multiplicador</span>
-        </div>
-      </div>
-
+      <!-- DESCRIPCIÓN -->
       <div class="vac-item-desc">
-        Tomándote <strong>${opp.daysFree}</strong> día${opp.daysFree > 1 ? 's' : ''} de vacaciones, obtienes <strong>${opp.totalRestDays} días de descanso</strong> aprovechando: <strong>${feriadosEnVentana.slice(0, 2).join(', ')}</strong>${feriadosEnVentana.length > 2 ? ', y más...' : ''}
+        <strong>De ${startStr.replace('<br>', ' de ')} a ${endStr.replace('<br>', ' de ')}</strong><br>
+        Tomándote <strong>${opp.daysFree} día${opp.daysFree > 1 ? 's' : ''} de vacaciones</strong>, obtienes <strong>${opp.totalRestDays} días de descanso</strong> aprovechando: <strong>${feriasText}</strong>
       </div>
 
+      <!-- TIMELINE VISUAL -->
       <div class="vac-timeline-inline">
         ${opp.restDays.map(d => `<div class="vac-day-inline ${d ? 'rest' : 'trabajo'}"></div>`).join('')}
       </div>
