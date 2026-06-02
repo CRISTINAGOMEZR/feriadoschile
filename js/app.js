@@ -318,6 +318,7 @@ function showPage(p){
   document.querySelectorAll('.nav-link').forEach(el=>el.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
   document.getElementById('nl-'+p).classList.add('active');
+  if(p==='vacaciones')renderVacaciones();
   window.scrollTo({top:0,behavior:'smooth'});
   closeMenu();
 }
@@ -350,6 +351,140 @@ function closeMenu(){
 window.addEventListener('scroll',()=>{
   document.getElementById('backToTop').classList.toggle('visible',window.scrollY>300);
 });
+
+// ===================== VACACIONES =====================
+function calcRestDays(startDate, endDate, feriados, sandwiches, countSandwichAsLibre) {
+  const restDays = [];
+  let current = new Date(startDate);
+  current.setHours(0, 0, 0, 0);
+
+  while (current <= endDate) {
+    const key = current.toDateString();
+    const isFer = isFeriado(current, feriados);
+    const isSW = sandwiches.some(s => s.toDateString() === key);
+    const isFDS = current.getDay() === 0 || current.getDay() === 6;
+
+    if (isFer || isFDS) {
+      restDays.push(true);
+    } else if (isSW && countSandwichAsLibre) {
+      restDays.push(true);
+    } else {
+      restDays.push(false);
+    }
+
+    current.setDate(current.getDate() + 1);
+  }
+  return restDays;
+}
+
+function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
+  const opportunities = [];
+  const year = currentYear;
+  const startOfYear = new Date(year, 0, 1);
+  const endOfYear = new Date(year, 11, 31);
+
+  for (let daysFree = 1; daysFree <= 10; daysFree++) {
+    const current = new Date(startOfYear);
+
+    while (current <= endOfYear) {
+      const key = current.toDateString();
+      const isFer = isFeriado(current, feriados);
+      const isSW = sandwiches.some(s => s.toDateString() === key);
+      const isFDS = current.getDay() === 0 || current.getDay() === 6;
+
+      let canStartHere = false;
+      if (!isFer && !isFDS) {
+        if (isSW && countSandwichAsLibre) {
+          canStartHere = true;
+        } else if (!isSW) {
+          canStartHere = true;
+        }
+      }
+
+      if (canStartHere) {
+        const startDate = new Date(current);
+        const endDate = new Date(current);
+        endDate.setDate(endDate.getDate() + daysFree - 1);
+
+        if (endDate <= endOfYear) {
+          const restDays = calcRestDays(startDate, endDate, feriados, sandwiches, countSandwichAsLibre);
+          const totalRestDays = restDays.filter(x => x).length;
+          const ratio = totalRestDays / daysFree;
+
+          if (totalRestDays > daysFree && ratio > 1) {
+            const oppKey = `${startDate.toDateString()}-${daysFree}`;
+
+            if (!opportunities.some(o => o.key === oppKey)) {
+              opportunities.push({
+                key: oppKey,
+                startDate: new Date(startDate),
+                daysFree: daysFree,
+                totalRestDays: totalRestDays,
+                ratio: ratio,
+                restDays: restDays
+              });
+            }
+          }
+        }
+      }
+
+      current.setDate(current.getDate() + 1);
+    }
+  }
+
+  return opportunities.sort((a, b) => b.ratio - a.ratio).slice(0, 20);
+}
+
+function renderVacaciones() {
+  const vacToggleSandwich = document.getElementById('vacToggleSandwich');
+  const countSandwichAsLibre = vacToggleSandwich.checked;
+  const { feriados } = DATA[currentYear];
+  const allSandwiches = calcSW(feriados);
+
+  const opportunities = findVacationOpportunities(feriados, allSandwiches, countSandwichAsLibre);
+  const grid = document.getElementById('vacGrid');
+  grid.innerHTML = '';
+
+  if (opportunities.length === 0) {
+    grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 20px">No hay oportunidades óptimas disponibles.</p>';
+    return;
+  }
+
+  opportunities.forEach((opp, idx) => {
+    const endDate = new Date(opp.startDate);
+    endDate.setDate(endDate.getDate() + opp.daysFree - 1);
+
+    const startStr = `${DIAS[opp.startDate.getDay()].substring(0, 3)} ${opp.startDate.getDate()} ${MESES[opp.startDate.getMonth()]}`;
+    const endStr = `${DIAS[endDate.getDay()].substring(0, 3)} ${endDate.getDate()} ${MESES[endDate.getMonth()]}`;
+
+    const card = document.createElement('div');
+    card.className = 'vac-card';
+    card.innerHTML = `
+      <div class="vac-rank">#${idx + 1}</div>
+      <div class="vac-dates">
+        <div class="vac-range">${startStr} — ${endStr}</div>
+        <div class="vac-stats">
+          <span class="stat-box">
+            <span class="stat-label">Días libres</span>
+            <span class="stat-value">${opp.daysFree}</span>
+          </span>
+          <span class="stat-box">
+            <span class="stat-label">Días descanso</span>
+            <span class="stat-value">${opp.totalRestDays}</span>
+          </span>
+          <span class="stat-box">
+            <span class="stat-label">Ratio</span>
+            <span class="stat-value">${opp.ratio.toFixed(1)}x</span>
+          </span>
+        </div>
+      </div>
+      <div class="vac-visual">
+        <div class="vac-timeline">${opp.restDays.map(d => `<div class="vac-day ${d ? 'rest' : 'trabajo'}"></div>`).join('')}</div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
 
 // ===================== CONFETTI =====================
 const confEl=document.getElementById('confetti');

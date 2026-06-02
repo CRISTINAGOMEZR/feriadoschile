@@ -326,6 +326,29 @@ h1,h2,h3{line-height:1.2}
 .leyes-content,.faq-content{overflow-x:hidden}
 .ley-card{overflow-x:auto}
 
+/* VACACIONES */
+.vac-c{background:linear-gradient(135deg,#2D6BB5,#1B3F72)}
+.vac-content{max-width:1000px;margin:40px auto;padding:0 20px 80px}
+.vac-toggle-wrap{background:var(--card);border-radius:16px;padding:24px;margin-bottom:40px;box-shadow:var(--shadow-sm)}
+.vac-toggle-label{display:flex;align-items:center;gap:12px;cursor:pointer;font-weight:600;color:var(--text)}
+.vac-toggle-label input{width:20px;height:20px;accent-color:var(--azul-m);cursor:pointer}
+.vac-toggle-hint{font-size:13px;color:var(--muted);margin-top:10px}
+.vac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+.vac-card{background:var(--card);border-radius:16px;padding:20px;box-shadow:var(--shadow-sm);border-left:4px solid var(--azul-m);transition:all 0.2s}
+.vac-card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(27,63,114,0.16)}
+.vac-rank{font-family:'Fraunces',serif;font-size:18px;font-weight:900;color:var(--azul-m);margin-bottom:12px}
+.vac-dates{margin-bottom:16px}
+.vac-range{font-family:'Fraunces',serif;font-size:18px;font-weight:900;color:var(--text);line-height:1.2}
+.vac-stats{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
+.stat-box{background:var(--bg);border-radius:12px;padding:8px 12px;flex:1;min-width:70px;text-align:center}
+.stat-label{display:block;font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:0.5px}
+.stat-value{display:block;font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:var(--azul-m);margin-top:3px}
+.vac-visual{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.vac-timeline{display:flex;gap:3px;flex-wrap:wrap}
+.vac-day{width:20px;height:20px;border-radius:6px;flex:0 0 auto}
+.vac-day.rest{background:var(--verde)}
+.vac-day.trabajo{background:var(--border)}
+
 /* TYP-05: orientación landscape en mobile */
 @media(max-width:768px) and (orientation:landscape){
   .hero{padding:28px 24px 60px}
