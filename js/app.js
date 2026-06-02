@@ -523,6 +523,9 @@ function renderVacacionesExpanded() {
         Tomándote <strong>${opp.daysFree} día${opp.daysFree > 1 ? 's' : ''} de vacaciones</strong>, obtienes <strong>${opp.totalRestDays} días de descanso</strong> aprovechando: <strong>${feriasText}</strong>
       </div>
 
+      <!-- MINI CALENDAR -->
+      ${generateMiniCalendar(opp.startDate, opp)}
+
       <!-- TIMELINE VISUAL -->
       <div class="vac-timeline-inline">
         ${opp.restDays.map(d => `<div class="vac-day-inline ${d ? 'rest' : 'trabajo'}"></div>`).join('')}
@@ -530,6 +533,56 @@ function renderVacacionesExpanded() {
     `;
     grid.appendChild(item);
   });
+}
+
+function generateMiniCalendar(startDate, opp) {
+  const mes = startDate.getMonth();
+  const anio = startDate.getFullYear();
+  const firstDay = new Date(anio, mes, 1);
+  const lastDay = new Date(anio, mes + 1, 0);
+  const startDow = (firstDay.getDay() + 6) % 7; // Lunes = 0
+  const daysInMonth = lastDay.getDate();
+
+  const { feriados } = DATA[currentYear];
+  const allSandwiches = calcSW(feriados);
+
+  let html = `<div class="vac-mini-calendar">
+    <div class="vac-calendar-header">${MESES_F[mes]} ${anio}</div>
+    <div class="vac-calendar-grid">
+      ${['L','M','M','J','V','S','D'].map(d => `<div class="vac-cal-day-label">${d}</div>`).join('')}`;
+
+  // Días vacíos al inicio
+  for (let i = 0; i < startDow; i++) {
+    html += '<div class="vac-cal-day empty"></div>';
+  }
+
+  // Días del mes
+  for (let day = 1; day <= daysInMonth; day++) {
+    const fecha = new Date(anio, mes, day);
+    const isFeriado = isFeriado(fecha, feriados);
+    const isSandwich = allSandwiches.some(s => s.toDateString() === fecha.toDateString());
+    const isFDS = fecha.getDay() === 0 || fecha.getDay() === 6;
+    const inRange = fecha >= opp.startDate && fecha <= new Date(opp.startDate.getTime() + opp.daysFree * 24 * 60 * 60 * 1000);
+
+    let clase = 'vac-cal-day';
+    if (isFeriado) clase += ' holiday';
+    else if (isFDS || isSandwich) clase += ' rest';
+    else if (inRange) clase += ' range';
+    else clase += ' work';
+
+    html += `<div class="${clase}" title="${fecha.toDateString()}">${day}</div>`;
+  }
+
+  html += `</div>
+    <div class="vac-calendar-legend">
+      <div class="vac-legend-item"><div class="vac-legend-dot" style="background:var(--verde)"></div>Descanso</div>
+      <div class="vac-legend-item"><div class="vac-legend-dot" style="background:var(--rojo)"></div>Feriado</div>
+      <div class="vac-legend-item"><div class="vac-legend-dot" style="background:rgba(232,48,48,0.15)"></div>Tu ventana</div>
+      <div class="vac-legend-item"><div class="vac-legend-dot" style="background:var(--border)"></div>Trabajo</div>
+    </div>
+  </div>`;
+
+  return html;
 }
 
 // ===================== CONFETTI =====================
