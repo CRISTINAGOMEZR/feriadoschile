@@ -497,11 +497,13 @@ function renderVacacionesExpanded() {
     const countSandwichAsLibre = vacToggleSandwich.checked;
     const { start: expandedStart, end: expandedEnd } = countRestWindow(opp.startDate, feriados, allSandwiches, countSandwichAsLibre);
 
-    // Contar feriados y fines de semana en la VENTANA EXPANDIDA (todo el descanso)
-    let holidayCount = 0, weekendCount = 0, holidayNames = [];
+    // Contar feriados, fines de semana y sándwiches en la VENTANA EXPANDIDA
+    let holidayCount = 0, weekendCount = 0, sandwichCount = 0;
+    let holidayNames = [], sandwichNames = [];
     let current = new Date(expandedStart);
     while (current <= expandedEnd) {
       const isFDS = current.getDay() === 0 || current.getDay() === 6;
+      const isSandwich = allSandwiches.some(s => s.toDateString() === current.toDateString());
       const feriadoObj = feriados.find(f => f.fecha.toDateString() === current.toDateString());
 
       if (feriadoObj) {
@@ -509,12 +511,20 @@ function renderVacacionesExpanded() {
         if (!holidayNames.includes(feriadoObj.nombre)) {
           holidayNames.push(feriadoObj.nombre);
         }
+      } else if (isSandwich) {
+        sandwichCount++;
+        sandwichNames.push(`${current.getDate()}/${current.getMonth() + 1}`);
       }
       if (isFDS) weekendCount++;
       current.setDate(current.getDate() + 1);
     }
 
-    const holidayText = holidayNames.slice(0, 2).join(', ') + (holidayNames.length > 2 ? '...' : '');
+    // Nombres combinados: feriados + sándwiches
+    let allNames = [...holidayNames];
+    if (sandwichCount > 0 && countSandwichAsLibre) {
+      allNames.push(`Sandwich(es): ${sandwichNames.join(', ')}`);
+    }
+    const namesText = allNames.slice(0, 2).join(', ') + (allNames.length > 2 ? '...' : '');
 
     // Generar fórmula horizontal
     let formulaHTML = `
@@ -526,7 +536,7 @@ function renderVacacionesExpanded() {
       <div class="vac-formula-box">
         <span class="vac-formula-value">${holidayCount}</span>
         <span class="vac-formula-label">feriado${holidayCount !== 1 ? 's' : ''}</span>
-        ${holidayCount > 0 ? `<span class="vac-formula-desc" style="font-size:7px">${holidayText}</span>` : ''}
+        ${holidayCount > 0 ? `<span class="vac-formula-desc" style="font-size:7px">${holidayNames.join(', ')}</span>` : ''}
       </div>
       <div class="vac-formula-box operator">+</div>
       <div class="vac-formula-box">
@@ -534,6 +544,17 @@ function renderVacacionesExpanded() {
         <span class="vac-formula-label">fds</span>
       </div>
     `;
+
+    if (sandwichCount > 0 && countSandwichAsLibre) {
+      formulaHTML += `
+        <div class="vac-formula-box operator">+</div>
+        <div class="vac-formula-box">
+          <span class="vac-formula-value">${sandwichCount}</span>
+          <span class="vac-formula-label">sandwich</span>
+          <span class="vac-formula-desc" style="font-size:7px">${sandwichNames.join(', ')}</span>
+        </div>
+      `;
+    }
 
     if (daysAvailable > 0) {
       formulaHTML += `
@@ -566,7 +587,7 @@ function renderVacacionesExpanded() {
       <!-- DESCRIPCIÓN -->
       <div class="vac-item-desc">
         <strong>De ${startStr.replace('<br>', ' de ')} a ${endStr.replace('<br>', ' de ')}</strong><br>
-        Tomándote <strong>${opp.daysFree} día${opp.daysFree > 1 ? 's' : ''} de vacaciones</strong>, obtienes <strong>${totalFormula} días de descanso</strong> aprovechando: <strong>${holidayText}</strong>
+        Tomándote <strong>${opp.daysFree} día${opp.daysFree > 1 ? 's' : ''} de vacaciones</strong>, obtienes <strong>${totalFormula} días de descanso</strong> aprovechando: <strong>${namesText}</strong>
       </div>
 
       <!-- MINI CALENDAR -->
