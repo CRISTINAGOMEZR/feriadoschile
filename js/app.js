@@ -493,25 +493,28 @@ function renderVacacionesExpanded() {
     const startStr = `${DIAS[opp.startDate.getDay()]} ${opp.startDate.getDate()}<br>${MESES_F[opp.startDate.getMonth()]}`;
     const endStr = `${DIAS[endDate.getDay()]} ${endDate.getDate()}<br>${MESES_F[endDate.getMonth()]}`;
 
-    // Contar feriados y fines de semana en la ventana
-    let holidayCount = 0, weekendCount = 0;
-    let current = new Date(opp.startDate);
-    while (current <= endDate) {
-      const isFer = isFeriado(current, feriados);
+    // Obtener ventana expandida
+    const countSandwichAsLibre = vacToggleSandwich.checked;
+    const { start: expandedStart, end: expandedEnd } = countRestWindow(opp.startDate, feriados, allSandwiches, countSandwichAsLibre);
+
+    // Contar feriados y fines de semana en la VENTANA EXPANDIDA (todo el descanso)
+    let holidayCount = 0, weekendCount = 0, holidayNames = [];
+    let current = new Date(expandedStart);
+    while (current <= expandedEnd) {
       const isFDS = current.getDay() === 0 || current.getDay() === 6;
-      if (isFer) holidayCount++;
+      const feriadoObj = feriados.find(f => f.fecha.toDateString() === current.toDateString());
+
+      if (feriadoObj) {
+        holidayCount++;
+        if (!holidayNames.includes(feriadoObj.nombre)) {
+          holidayNames.push(feriadoObj.nombre);
+        }
+      }
       if (isFDS) weekendCount++;
       current.setDate(current.getDate() + 1);
     }
 
-    // Encontrar qué feriados están en la ventana (para descripción)
-    const windowStart = new Date(opp.startDate);
-    windowStart.setDate(windowStart.getDate() - 30);
-    const windowEnd = new Date(endDate);
-    windowEnd.setDate(windowEnd.getDate() + 30);
-
-    const feriadosEnVentana = feriados.filter(f => f.fecha >= windowStart && f.fecha <= windowEnd).map(f => f.nombre);
-    const feriasText = feriadosEnVentana.slice(0, 2).join(', ') + (feriadosEnVentana.length > 2 ? '...' : '');
+    const holidayText = holidayNames.slice(0, 2).join(', ') + (holidayNames.length > 2 ? '...' : '');
 
     // Generar fórmula horizontal
     let formulaHTML = `
@@ -523,6 +526,7 @@ function renderVacacionesExpanded() {
       <div class="vac-formula-box">
         <span class="vac-formula-value">${holidayCount}</span>
         <span class="vac-formula-label">feriado${holidayCount !== 1 ? 's' : ''}</span>
+        ${holidayCount > 0 ? `<span class="vac-formula-desc" style="font-size:7px">${holidayText}</span>` : ''}
       </div>
       <div class="vac-formula-box operator">+</div>
       <div class="vac-formula-box">
@@ -536,7 +540,7 @@ function renderVacacionesExpanded() {
         <div class="vac-formula-box operator">+</div>
         <div class="vac-formula-box">
           <span class="vac-formula-value">${daysAvailable}</span>
-          <span class="vac-formula-label">disp</span>
+          <span class="vac-formula-label">vac disp</span>
         </div>
       `;
     }
@@ -562,7 +566,7 @@ function renderVacacionesExpanded() {
       <!-- DESCRIPCIÓN -->
       <div class="vac-item-desc">
         <strong>De ${startStr.replace('<br>', ' de ')} a ${endStr.replace('<br>', ' de ')}</strong><br>
-        Tomándote <strong>${opp.daysFree} día${opp.daysFree > 1 ? 's' : ''} de vacaciones</strong>, obtienes <strong>${opp.totalRestDays} días de descanso</strong> aprovechando: <strong>${feriasText}</strong>
+        Tomándote <strong>${opp.daysFree} día${opp.daysFree > 1 ? 's' : ''} de vacaciones</strong>, obtienes <strong>${totalFormula} días de descanso</strong> aprovechando: <strong>${holidayText}</strong>
       </div>
 
       <!-- MINI CALENDAR -->
