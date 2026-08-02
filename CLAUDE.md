@@ -1,5 +1,35 @@
 # Feriados Chile — Contexto del Proyecto
 
+## ⚠️ Política de autonomía — este repo es distinto
+
+**`git push` a `main` publica en `misferiados.cl` al instante.** Cloudflare despliega solo.
+No hay build, no hay tests, no hay CI: nada valida el código antes de que lo vea la gente.
+Y hay tráfico real (Google Analytics activo).
+
+Por eso aquí **no existe el nivel 🟢 de auto-merge** que sí aplica en los otros proyectos:
+
+**🟡 Todo abre PR y espera aprobación de Cristina.** Sin excepciones, ni siquiera para typos.
+Haz el trabajo completo, deja el PR listo con explicación, y para.
+
+**🔴 Pregunta antes de empezar.** Datos de feriados (fechas, leyes, tipos), `CNAME`,
+`sitemap.xml`, el tag de Google Analytics, o cualquier cosa que afecte al SEO.
+
+**Riesgo específico de este proyecto:** la lógica de fechas. Días sandwich, feriados
+irrenunciables, feriados regionales y años bisiestos. Un error aquí es visible para todos
+los visitantes y difícil de detectar en revisión — verifica contra la ley citada en cada
+registro, no contra lo que parezca correcto.
+
+**Antes de proponer nada, abre el sitio y compruébalo:**
+```bash
+python3 -m http.server 8765   # luego http://localhost:8765
+```
+
+**Agentes** en `.claude/agents/`: `pm` (prioriza y cuestiona), `bug-hunter` (lógica de
+fechas sobre todo), `ui-reviewer` (corre el sitio y lo mira). No están `deps-security` ni
+`test-quality`: no hay dependencias ni suite de tests que mantener.
+
+---
+
 ## Descripción
 Sitio web estático de una sola página (index.html) que muestra los feriados nacionales y regionales de Chile para 2025, 2026 y 2027. Incluye días sandwich, feriados irrenunciables y respaldo legal de cada fecha.
 
@@ -10,7 +40,7 @@ Sitio web estático de una sola página (index.html) que muestra los feriados na
 ## Flujo de trabajo
 
 1. **Hacer cambios** en index.html
-2. **Revisar** abriendo `file:///Users/cristinagomez/feriadoschile/index.html` en el browser
+2. **Revisar** levantando `python3 -m http.server 8765` y abriendo http://localhost:8765
 3. **Guardar progreso** (punto de restauración, sin publicar):
    ```
    git add index.html && git commit -m "descripción del cambio"
@@ -27,7 +57,7 @@ Sitio web estático de una sola página (index.html) que muestra los feriados na
 
 ## Stack Técnico
 - **Frontend:** HTML + CSS + JS vanilla (sin frameworks, sin build tools)
-- **Estructura:** Un solo archivo `index.html` (~735 líneas)
+- **Estructura:** `index.html` (255 líneas) + `css/styles.css` (470) + `js/app.js` (675) + `js/data.js` (126)
 - **Fuentes:** Google Fonts — Nunito (body) + Fraunces (títulos)
 - **Hosting:** Cloudflare Pages (o Workers)
 - **Dominio:** `misferiados.cl` — registrado en NIC.cl
