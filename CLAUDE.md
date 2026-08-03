@@ -53,8 +53,23 @@ Sitio web estático de una sola página (index.html) que muestra los feriados na
 
 > `commit` = guardar localmente · `push` = publicar en producción
 
-**No hay entorno de staging ni previews por PR.** GitHub Pages sirve una sola rama
-(`main`). Para revisar un cambio antes de aprobarlo hay que levantarlo local:
+**Previews por rama — así se revisa antes de aprobar.** Cloudflare Pages está conectado
+a este repo **solo para previsualizar**. Cada rama que se pushea publica sola en:
+
+```
+https://<rama-con-guiones>.feriadoschile-e2u.pages.dev
+```
+
+Las `/` de la rama se convierten en `-`: la rama `claude/fix-algo` queda en
+`claude-fix-algo.feriadoschile-e2u.pages.dev`.
+
+Ojo con dos cosas:
+- `feriadoschile-e2u.pages.dev` **sin subdominio** es la copia de `main` — se ve igual
+  que producción, no sirve para revisar un PR. Hay que usar la URL de la rama.
+- Producción **no** pasa por Cloudflare Pages. `misferiados.cl` lo sigue sirviendo
+  GitHub Pages desde `main`; el proyecto de Pages no tiene dominio propio asociado.
+
+Alternativa local, siempre válida:
 `git checkout <rama> && python3 -m http.server 8765`.
 
 ---
@@ -117,7 +132,7 @@ Los feriados están hardcodeados en el objeto `DATA` dentro del JS:
 | Dominio | misferiados.cl — registrado en NIC.cl |
 | DNS | Cloudflare — 4 registros A a `185.199.108–111.153` (IPs de GitHub Pages), todos en "DNS only" |
 | Hosting | GitHub Pages — rama `main` de este repo, dominio via `CNAME` |
-| Staging | No existe. Ver "Flujo de trabajo" |
+| Previews / staging | Cloudflare Pages, proyecto `feriadoschile` → `feriadoschile-e2u.pages.dev`. Solo previews por rama; **no** sirve producción ni tiene dominio propio |
 | Analytics | Google Analytics 4 — `G-9VSSTEV2N7` |
 | Search Console | Google Search Console — verificado via meta tag |
 | Sitemap | /sitemap.xml |
