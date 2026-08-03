@@ -372,15 +372,19 @@ function isRestDay(d, feriados, sandwiches, countSandwichAsLibre) {
   return false;
 }
 
-function countRestWindow(d, feriados, sandwiches, countSandwichAsLibre) {
-  let start = new Date(d), end = new Date(d);
-  let back = new Date(d);
+// Expande el descanso hacia atras desde dStart y hacia adelante desde dEnd.
+// dEnd es opcional: si no se pasa, la ventana es un solo dia (dStart).
+function countRestWindow(dStart, dEnd, feriados, sandwiches, countSandwichAsLibre) {
+  const winStart = new Date(dStart);
+  const winEnd = dEnd ? new Date(dEnd) : new Date(dStart);
+  let start = new Date(winStart), end = new Date(winEnd);
+  let back = new Date(winStart);
   back.setDate(back.getDate() - 1);
   while (isRestDay(back, feriados, sandwiches, countSandwichAsLibre)) {
     start = new Date(back);
     back.setDate(back.getDate() - 1);
   }
-  let fwd = new Date(d);
+  let fwd = new Date(winEnd);
   fwd.setDate(fwd.getDate() + 1);
   while (isRestDay(fwd, feriados, sandwiches, countSandwichAsLibre)) {
     end = new Date(fwd);
@@ -424,7 +428,7 @@ function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
         windowEnd.setDate(windowEnd.getDate() + daysFree - 1);
 
         if (windowEnd <= endOfYear) {
-          const {start: expandedStart, end: expandedEnd, count: totalRestDays} = countRestWindow(current, feriados, sandwiches, countSandwichAsLibre);
+          const {start: expandedStart, end: expandedEnd, count: totalRestDays} = countRestWindow(windowStart, windowEnd, feriados, sandwiches, countSandwichAsLibre);
           const ratio = totalRestDays / daysFree;
           const oppKey = `${windowStart.toDateString()}-${daysFree}`;
 
@@ -456,40 +460,28 @@ function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
 }
 
 function toggleVacacionesExpanded() {
-  console.log('toggleVacacionesExpanded() called');
   const expanded = document.getElementById('vacExpanded');
   const btn = document.getElementById('vacExpandBtn');
-  console.log('Found elements:', { expanded: !!expanded, btn: !!btn });
   expanded.classList.toggle('open');
   btn.setAttribute('aria-expanded', expanded.classList.contains('open'));
-  console.log('Toggled class, isOpen:', expanded.classList.contains('open'));
   if (expanded.classList.contains('open')) {
-    console.log('Calling renderVacacionesExpanded...');
     renderVacacionesExpanded();
-    console.log('renderVacacionesExpanded completed');
   }
 }
 
 function renderVacacionesExpanded() {
-  console.log('renderVacacionesExpanded() started');
   try {
     const vacToggleSandwich = document.getElementById('vacToggleSandwich');
-    console.log('vacToggleSandwich found:', !!vacToggleSandwich);
     const countSandwichAsLibre = vacToggleSandwich.checked;
     const { feriados } = DATA[currentYear];
-    console.log('Got feriados:', feriados.length);
     const allSandwiches = calcSW(feriados);
-    console.log('Got sandwiches:', allSandwiches.length);
 
-    console.log('Calling findVacationOpportunities...');
     const opportunities = findVacationOpportunities(feriados, allSandwiches, countSandwichAsLibre);
-    console.log('Found opportunities:', opportunities.length);
 
     const grid = document.getElementById('vacExpandedGrid');
     grid.innerHTML = '';
 
     if (opportunities.length === 0) {
-      console.log('No opportunities, showing message');
       grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 20px;grid-column:1/-1">No hay oportunidades óptimas disponibles.</p>';
       return;
     }
@@ -506,7 +498,7 @@ function renderVacacionesExpanded() {
 
     // Obtener ventana expandida
     const countSandwichAsLibre = vacToggleSandwich.checked;
-    const { start: expandedStart, end: expandedEnd } = countRestWindow(opp.startDate, feriados, allSandwiches, countSandwichAsLibre);
+    const { start: expandedStart, end: expandedEnd } = countRestWindow(opp.startDate, endDate, feriados, allSandwiches, countSandwichAsLibre);
 
     // Contar feriados, fines de semana y sándwiches en la VENTANA EXPANDIDA
     let holidayCount = 0, weekendCount = 0, sandwichCount = 0;
@@ -611,13 +603,11 @@ function renderVacacionesExpanded() {
     `;
     grid.appendChild(item);
   });
-  console.log('renderVacacionesExpanded() completed successfully');
   } catch (err) {
-    console.error('ERROR in renderVacacionesExpanded:', err.message);
-    console.error('Stack:', err.stack);
+    console.error('renderVacacionesExpanded:', err);
     const grid = document.getElementById('vacExpandedGrid');
     if (grid) {
-      grid.innerHTML = '<p style="color:red;padding:20px"><strong>Error:</strong> ' + err.message + '</p>';
+      grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 20px;grid-column:1/-1">No pudimos calcular las recomendaciones en este momento.</p>';
     }
   }
 }
@@ -627,7 +617,8 @@ function generateMiniCalendar(startDate, opp) {
   const allSandwiches = calcSW(feriados);
 
   // Calcular el rango de semanas afectadas
-  const windowEnd = new Date(opp.startDate.getTime() + opp.daysFree * 24 * 60 * 60 * 1000);
+  const windowEnd = new Date(opp.startDate);
+  windowEnd.setDate(windowEnd.getDate() + opp.daysFree - 1);
 
   // Primera fecha: lunes de la semana que contiene opp.startDate (o antes)
   const calStart = new Date(opp.startDate);
