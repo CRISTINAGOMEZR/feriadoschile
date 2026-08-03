@@ -162,6 +162,13 @@ nav{background:var(--azul);display:flex;align-items:center;justify-content:space
 .sw-day-card:hover{transform:translateX(3px);box-shadow:var(--shadow)}
 .sw-day-card.pasado{opacity:0.42}
 
+/* EMPTY STATE LISTADO */
+.list-empty{background:var(--card);border:2px dashed var(--border);border-radius:16px;padding:44px 24px;text-align:center}
+.list-empty-title{font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:var(--text);line-height:1.2}
+.list-empty-sub{font-size:14px;color:var(--muted);line-height:1.5;margin:8px 0 18px}
+.list-empty-btn{background:var(--azul-m);color:#fff;border:none;border-radius:10px;padding:12px 20px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;min-height:44px;transition:background 0.18s}
+.list-empty-btn:hover{background:var(--azul)}
+
 /* REGIONALES */
 #regGrid{display:flex;flex-direction:column;gap:9px}
 .f-card.regional{border-color:var(--azul-s)}
