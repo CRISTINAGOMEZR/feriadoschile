@@ -2,7 +2,7 @@
 
 ## ⚠️ Política de autonomía — este repo es distinto
 
-**`git push` a `main` publica en `misferiados.cl` al instante.** Cloudflare despliega solo.
+**`git push` a `main` publica en `misferiados.cl` al instante.** GitHub Pages despliega solo.
 No hay build, no hay tests, no hay CI: nada valida el código antes de que lo vea la gente.
 Y hay tráfico real (Google Analytics activo).
 
@@ -49,9 +49,13 @@ Sitio web estático de una sola página (index.html) que muestra los feriados na
    ```
    git push
    ```
-   Cloudflare detecta el push a GitHub y despliega automáticamente (~1 min).
+   GitHub Pages detecta el push a `main` y republica automáticamente (~1 min).
 
 > `commit` = guardar localmente · `push` = publicar en producción
+
+**No hay entorno de staging ni previews por PR.** GitHub Pages sirve una sola rama
+(`main`). Para revisar un cambio antes de aprobarlo hay que levantarlo local:
+`git checkout <rama> && python3 -m http.server 8765`.
 
 ---
 
@@ -59,9 +63,9 @@ Sitio web estático de una sola página (index.html) que muestra los feriados na
 - **Frontend:** HTML + CSS + JS vanilla (sin frameworks, sin build tools)
 - **Estructura:** `index.html` (255 líneas) + `css/styles.css` (470) + `js/app.js` (675) + `js/data.js` (126)
 - **Fuentes:** Google Fonts — Nunito (body) + Fraunces (títulos)
-- **Hosting:** Cloudflare Pages (o Workers)
+- **Hosting:** GitHub Pages — sirve la rama `main` de este repo; el archivo `CNAME` de la raíz es lo que ata el dominio
 - **Dominio:** `misferiados.cl` — registrado en NIC.cl
-- **DNS / CDN:** Cloudflare
+- **DNS:** Cloudflare, en modo **"DNS only"** (nube gris) — resuelve el dominio, pero **no** hay proxy: sin CDN, sin caché ni WAF de Cloudflare
 - **Analytics:** Google Analytics 4 (tag: `G-9VSSTEV2N7`)
 - **Indexación:** Google Search Console (verificación via meta tag: `qrj3rofXLTCaoiQmz4KdeTTxePiM9bEhBg1F93wLU38`)
 - **Sitemap:** `sitemap.xml` en la raíz
@@ -111,8 +115,9 @@ Los feriados están hardcodeados en el objeto `DATA` dentro del JS:
 | Servicio | Detalle |
 |---|---|
 | Dominio | misferiados.cl — registrado en NIC.cl |
-| DNS / Proxy | Cloudflare |
-| Hosting | Cloudflare (Pages o CDN directo) |
+| DNS | Cloudflare — 4 registros A a `185.199.108–111.153` (IPs de GitHub Pages), todos en "DNS only" |
+| Hosting | GitHub Pages — rama `main` de este repo, dominio via `CNAME` |
+| Staging | No existe. Ver "Flujo de trabajo" |
 | Analytics | Google Analytics 4 — `G-9VSSTEV2N7` |
 | Search Console | Google Search Console — verificado via meta tag |
 | Sitemap | /sitemap.xml |
