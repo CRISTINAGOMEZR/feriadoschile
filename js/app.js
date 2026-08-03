@@ -206,6 +206,17 @@ function renderList(mes,feriados,sandwiches){
     ...swFiltered.map(s=>({fecha:s,_kind:'sandwich'}))
   ].sort((a,b)=>a.fecha-b.fecha);
 
+  if(combined.length===0){
+    const nombreMes=mes==='todos'?'':MESES_F[parseInt(mes)];
+    const empty=document.createElement('div');
+    empty.className='list-empty';
+    empty.innerHTML='<div class="list-empty-title">'+(nombreMes?nombreMes+' no tiene feriados':'No hay feriados que mostrar')+'</div>'
+      +'<div class="list-empty-sub">'+(nombreMes?'En '+currentYear+' no hay ningún feriado legal en este mes.':'Prueba con otro mes o vuelve al listado completo.')+'</div>'
+      +'<button class="list-empty-btn" onclick="currentMes=\'todos\';renderList(\'todos\',DATA[currentYear].feriados,showSandwich?calcSW(DATA[currentYear].feriados):[]);updateMesTabs(\'todos\')">Ver todo el año</button>';
+    grid.appendChild(empty);
+    return;
+  }
+
   combined.forEach(item=>{
     const card=document.createElement('div');
     if(item._kind==='feriado'){
