@@ -85,6 +85,21 @@
 | D-04 | Accesibilidad: contraste `--muted` | 🟡 Pendiente | `#7B8DB0` sobre `#F5F7FF` puede fallar WCAG AA — parte de D-03 |
 | D-05 | Empty state en vista "por mes" sin feriados | 🟡 Pendiente | Muestra lista vacía sin mensaje explicativo |
 | D-06 | Ampliar panoramas con imágenes o ilustraciones | 💡 Idea | Cards de actividades son texto puro; imagen destacada mejoraría el visual |
+| D-07 | Regresión mobile reportada por Cristina | 🟡 Pendiente | Feedback 2026-08-03: "el sitio responsive en mobile se ve realmente mal", pese a que NAV/LAY/TYP del Sprint 1 y PERF/ACC del Sprint 2 están marcados ✅ Hecho. Re-testear en dispositivo real (no solo DevTools) antes de asumir que hay regresión de código — puede ser gap entre lo validado entonces y un viewport/device no cubierto. |
+| D-08 | Rediseño visual: sacar el "look de IA", priorizar legibilidad humana | 🟡 Pendiente | Feedback 2026-08-03 de Cristina: quitar la estética genérica de IA, mejorar legibilidad y accesibilidad. Alimenta directamente a D-02 (rediseño de paleta + design system) — usar como criterio de aceptación del rediseño, no como tarea separada. |
+| D-09 | "¿Qué hacer en el próximo feriado?" no referencia el feriado real | 🟡 Pendiente | Feedback 2026-08-03: el título de la sección Panoramas promete el "próximo feriado" pero el contenido solo filtra por temporada (`getSeason`/`matchesSeason`), sin usar la fecha del próximo feriado. Evaluar si debe nombrar el feriado próximo o al menos destacar actividades relevantes a esa fecha concreta. |
+
+---
+
+## 🗓️ Recomiéndame mis vacaciones
+
+> Feature implementada (commits `077b42b`…`da499b6`) pero nunca se agregó a este backlog ni a VERSIONES.md — feedback de Cristina 2026-08-03 la trae a la vista.
+
+| # | Tarea | Estado | Notas |
+|---|---|---|---|
+| VAC-01 | No recomendar fechas ya pasadas | 🟡 Pendiente | Cristina, 2026-08-03: probando el sitio en agosto, la tarjeta #1 seguía siendo "Lunes 5 de Enero" — una fecha ya pasada. `findVacationOpportunities` recorre todo el año calendario sin filtrar por la fecha de hoy. |
+| VAC-02 | Lógica de ranking poco intuitiva | 🟡 Pendiente | Cristina, 2026-08-03: "la lógica no cuadra, funciona raro, no es intuitiva". Causa raíz ya identificada durante el PR #3: el ranking ordena por `ratio = totalRestDays / daysFree`, que casi siempre favorece bloques de 1 día aunque bloques más largos den más descanso neto. Requiere una decisión de producto (no es un bugfix silencioso): ¿mostrar top N por cada tamaño de bloque? ¿usar el input "días disponibles" para fijar `daysFree` y no rankear por ratio global? Cristina debe decidir el criterio antes de tocar el código. |
+| VAC-03 | Documentar la feature | 💡 Idea | Una vez resueltos VAC-01/VAC-02, agregar entrada retroactiva en VERSIONES.md — hoy no existe registro de cuándo ni por qué se agregó "Recomiéndame mis vacaciones". |
 
 ---
 
@@ -153,3 +168,4 @@
 - Widget embebible para otros sitios (iframe o JS snippet)
 - Versión PWA para instalar en móvil
 - API pública de feriados (JSON) para desarrolladores
+- Mecanismo de feedback de usuarios reales (formulario simple o botón flotante) — pedido por Cristina 2026-08-03, para capturar opiniones de visitantes en vez de solo inferir desde analytics
