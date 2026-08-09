@@ -138,6 +138,9 @@ function renderAll(){
   if(currentView==='lista')renderList('todos',feriados,sandwiches);
   else if(currentView==='mes')renderList(currentMes,feriados,sandwiches);
   else renderCal(feriados,sandwiches);
+
+  const vacExpanded=document.getElementById('vacExpanded');
+  if(vacExpanded&&vacExpanded.classList.contains('open'))renderVacacionesExpanded();
 }
 
 // ===================== SANDWICH TOGGLE =====================
@@ -456,40 +459,28 @@ function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
 }
 
 function toggleVacacionesExpanded() {
-  console.log('toggleVacacionesExpanded() called');
   const expanded = document.getElementById('vacExpanded');
   const btn = document.getElementById('vacExpandBtn');
-  console.log('Found elements:', { expanded: !!expanded, btn: !!btn });
   expanded.classList.toggle('open');
   btn.setAttribute('aria-expanded', expanded.classList.contains('open'));
-  console.log('Toggled class, isOpen:', expanded.classList.contains('open'));
   if (expanded.classList.contains('open')) {
-    console.log('Calling renderVacacionesExpanded...');
     renderVacacionesExpanded();
-    console.log('renderVacacionesExpanded completed');
   }
 }
 
 function renderVacacionesExpanded() {
-  console.log('renderVacacionesExpanded() started');
   try {
     const vacToggleSandwich = document.getElementById('vacToggleSandwich');
-    console.log('vacToggleSandwich found:', !!vacToggleSandwich);
     const countSandwichAsLibre = vacToggleSandwich.checked;
     const { feriados } = DATA[currentYear];
-    console.log('Got feriados:', feriados.length);
     const allSandwiches = calcSW(feriados);
-    console.log('Got sandwiches:', allSandwiches.length);
 
-    console.log('Calling findVacationOpportunities...');
     const opportunities = findVacationOpportunities(feriados, allSandwiches, countSandwichAsLibre);
-    console.log('Found opportunities:', opportunities.length);
 
     const grid = document.getElementById('vacExpandedGrid');
     grid.innerHTML = '';
 
     if (opportunities.length === 0) {
-      console.log('No opportunities, showing message');
       grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 20px;grid-column:1/-1">No hay oportunidades óptimas disponibles.</p>';
       return;
     }
@@ -598,7 +589,7 @@ function renderVacacionesExpanded() {
       <!-- DESCRIPCIÓN -->
       <div class="vac-item-desc">
         <strong>De ${startStr.replace('<br>', ' de ')} a ${endStr.replace('<br>', ' de ')}</strong><br>
-        Tomándote <strong>${opp.daysFree} día${opp.daysFree > 1 ? 's' : ''} de vacaciones</strong>, obtienes <strong>${totalFormula} días de descanso</strong> aprovechando: <strong>${namesText}</strong>
+        Tomándote <strong>${opp.daysFree} día${opp.daysFree > 1 ? 's' : ''} de vacaciones</strong>, obtienes <strong>${totalFormula} días de descanso</strong>${namesText ? ` aprovechando: <strong>${namesText}</strong>` : ''}
       </div>
 
       <!-- MINI CALENDAR -->
@@ -611,13 +602,12 @@ function renderVacacionesExpanded() {
     `;
     grid.appendChild(item);
   });
-  console.log('renderVacacionesExpanded() completed successfully');
   } catch (err) {
     console.error('ERROR in renderVacacionesExpanded:', err.message);
     console.error('Stack:', err.stack);
     const grid = document.getElementById('vacExpandedGrid');
     if (grid) {
-      grid.innerHTML = '<p style="color:red;padding:20px"><strong>Error:</strong> ' + err.message + '</p>';
+      grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 20px;grid-column:1/-1">No pudimos calcular las recomendaciones. Recarga la página.</p>';
     }
   }
 }
@@ -627,7 +617,8 @@ function generateMiniCalendar(startDate, opp) {
   const allSandwiches = calcSW(feriados);
 
   // Calcular el rango de semanas afectadas
-  const windowEnd = new Date(opp.startDate.getTime() + opp.daysFree * 24 * 60 * 60 * 1000);
+  const windowEnd = new Date(opp.startDate);
+  windowEnd.setDate(windowEnd.getDate() + opp.daysFree - 1);
 
   // Primera fecha: lunes de la semana que contiene opp.startDate (o antes)
   const calStart = new Date(opp.startDate);
@@ -635,10 +626,14 @@ function generateMiniCalendar(startDate, opp) {
 
   // Última fecha: domingo de la semana que contiene windowEnd
   const calEnd = new Date(windowEnd);
-  calEnd.setDate(calEnd.getDate() + (7 - ((calEnd.getDay() + 6) % 7)) % 7); // Ir al domingo
+  calEnd.setDate(calEnd.getDate() + (6 - ((calEnd.getDay() + 6) % 7))); // Ir al domingo
+
+  const headerTxt = opp.startDate.getMonth() === windowEnd.getMonth()
+    ? `${MESES_F[opp.startDate.getMonth()]} ${opp.startDate.getFullYear()}`
+    : `${MESES_F[opp.startDate.getMonth()]}–${MESES_F[windowEnd.getMonth()]} ${windowEnd.getFullYear()}`;
 
   let html = `<div class="vac-mini-calendar">
-    <div class="vac-calendar-header">${MESES_F[calStart.getMonth()]} ${calStart.getFullYear()}</div>
+    <div class="vac-calendar-header">${headerTxt}</div>
     <div class="vac-calendar-grid">
       ${['L','M','M','J','V','S','D'].map(d => `<div class="vac-cal-day-label">${d}</div>`).join('')}`;
 

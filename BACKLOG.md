@@ -99,6 +99,22 @@
 
 ---
 
+## 🏖️ Épica: Recomiéndame mis vacaciones
+
+> Feature publicada el 2026-06-02 (commit `8686c1c` + ~13 commits el mismo día) sin pasar por
+> este backlog ni por `VERSIONES.md`. Auditada recién el 2026-08-09 (bug-hunter + pm). Los tres
+> ítems de abajo están **acoplados**: arreglar V-03 sin V-01 llenaría el listado de planes
+> multi-día en fechas ya pasadas. Tratar como un solo trabajo de producto, no arreglar uno solo.
+
+| # | Tarea | Estado | Notas |
+|---|---|---|---|
+| V-01 | El listado no filtra fechas pasadas | 🟡 Pendiente | `findVacationOpportunities` (`js/app.js`) recorre todo el año sin comparar contra `today`. Verificado 9-ago-2026: 14 de las 20 tarjetas ya pasaron; Fiestas Patrias (17-sep) queda en el puesto #17. Necesita decisión: ¿se oculta lo pasado, o el año completo si es un año ya cerrado? |
+| V-02 | El input "días de vacaciones disponibles" no hace nada funcional | 🟡 Pendiente | Solo se SUMA al total (`totalFormula = opp.totalRestDays + daysAvailable`), no se gasta ni se ubica en el calendario. Ej: escribir 10 hace que la tarjeta diga "Tomándote 1 día... obtienes 15 días de descanso". Depende de qué se decida en V-03. |
+| V-03 | `countRestWindow` ignora `daysFree` — el buscador nunca recomienda más de 1 día | 🟡 Pendiente | Se llama con el primer día de la ventana solamente; el loop que prueba `daysFree` de 1 a 10 (`js/app.js:404`) descarta el resultado entero. Verificado: las 20 recomendaciones de 2026 y 2027 tienen `daysFree=1`. Requiere rediseñar el cálculo — decisión de producto. |
+| V-04 | Toggle "contar sándwiches como libres" apagado excluye sándwiches como día de inicio | 💡 Idea | `findVacationOpportunities` (`js/app.js:412-419`) nunca deja `canStartHere=true` en un día sandwich cuando el toggle está apagado — se pierden los mejores días del año. Impacto hoy bajo (solo 1 sándwich restante en 2026, ninguno en 2027). Toca la misma función que V-01/V-02/V-03: resolver junto con ese paquete, no antes. |
+
+---
+
 ## 🔧 Deuda Técnica
 
 | # | Tarea | Estado | Notas |
