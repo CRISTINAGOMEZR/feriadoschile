@@ -83,8 +83,18 @@
 | D-02 | **Rediseño de paleta + design system** | 🟡 Pendiente | Definir tokens de color, tipografía, espaciado y componentes base antes de seguir iterando. Incluye modo oscuro como opción. |
 | D-03 | **Verificar accesibilidad en todos los dispositivos** | 🟡 Pendiente | Desktop, tablet y móvil. WCAG AA mínimo: contraste, aria-labels, navegación por teclado, tamaño de tap targets en móvil |
 | D-04 | Accesibilidad: contraste `--muted` | 🟡 Pendiente | `#7B8DB0` sobre `#F5F7FF` puede fallar WCAG AA — parte de D-03 |
-| D-05 | Empty state en vista "por mes" sin feriados | 🟡 Pendiente | Muestra lista vacía sin mensaje explicativo |
+| D-05 | Empty state en vista "por mes" sin feriados | ✅ Hecho | Mergeado en `d24f5ff` |
 | D-06 | Ampliar panoramas con imágenes o ilustraciones | 💡 Idea | Cards de actividades son texto puro; imagen destacada mejoraría el visual |
+
+---
+
+## 🏖️ Calculadora de vacaciones
+
+| # | Tarea | Estado | Notas |
+|---|---|---|---|
+| V-01 | Texto "aprovechando: " queda colgando sin nombres | 🟡 Pendiente | Cuando la ventana no incluye feriados, la frase termina en dos puntos y un `<strong>` vacío. Visible en 8 de 20 tarjetas con el toggle Sandwich apagado, en los 3 años. Fix: omitir la frase si `namesText` está vacío (`js/app.js`, ~L602) |
+| V-02 | La calculadora nunca recomienda tomarse 2+ días seguidos | 🟡 Pendiente | `countRestWindow()` se calcula desde un solo día e ignora `daysFree`, así que `totalRestDays` no crece y `ratio = totalRestDays / daysFree` siempre se maximiza en `daysFree = 1`. El top-20 termina siendo 100% de un día. Requiere rediseño del ranking, no es un fix puntual (`js/app.js` L375–395 y L404–455) |
+| V-03 | Cabecera del mini-calendario muestra el mes equivocado | 🟡 Pendiente | El header usa `calStart.getMonth()` (lunes de la semana), no el mes de la ventana. Ej. 2026: la tarjeta "Viernes 4 de Diciembre" dice "Noviembre 2026" y "Viernes 2 de Enero" dice "Diciembre 2025". Afecta 4–5 de 20 tarjetas según el año (`js/app.js` L643) |
 
 ---
 
