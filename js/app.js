@@ -456,40 +456,28 @@ function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
 }
 
 function toggleVacacionesExpanded() {
-  console.log('toggleVacacionesExpanded() called');
   const expanded = document.getElementById('vacExpanded');
   const btn = document.getElementById('vacExpandBtn');
-  console.log('Found elements:', { expanded: !!expanded, btn: !!btn });
   expanded.classList.toggle('open');
   btn.setAttribute('aria-expanded', expanded.classList.contains('open'));
-  console.log('Toggled class, isOpen:', expanded.classList.contains('open'));
   if (expanded.classList.contains('open')) {
-    console.log('Calling renderVacacionesExpanded...');
     renderVacacionesExpanded();
-    console.log('renderVacacionesExpanded completed');
   }
 }
 
 function renderVacacionesExpanded() {
-  console.log('renderVacacionesExpanded() started');
   try {
     const vacToggleSandwich = document.getElementById('vacToggleSandwich');
-    console.log('vacToggleSandwich found:', !!vacToggleSandwich);
     const countSandwichAsLibre = vacToggleSandwich.checked;
     const { feriados } = DATA[currentYear];
-    console.log('Got feriados:', feriados.length);
     const allSandwiches = calcSW(feriados);
-    console.log('Got sandwiches:', allSandwiches.length);
 
-    console.log('Calling findVacationOpportunities...');
     const opportunities = findVacationOpportunities(feriados, allSandwiches, countSandwichAsLibre);
-    console.log('Found opportunities:', opportunities.length);
 
     const grid = document.getElementById('vacExpandedGrid');
     grid.innerHTML = '';
 
     if (opportunities.length === 0) {
-      console.log('No opportunities, showing message');
       grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 20px;grid-column:1/-1">No hay oportunidades óptimas disponibles.</p>';
       return;
     }
@@ -508,16 +496,28 @@ function renderVacacionesExpanded() {
     const countSandwichAsLibre = vacToggleSandwich.checked;
     const { start: expandedStart, end: expandedEnd } = countRestWindow(opp.startDate, feriados, allSandwiches, countSandwichAsLibre);
 
-    // Contar feriados, fines de semana y sándwiches en la VENTANA EXPANDIDA
-    let holidayCount = 0, weekendCount = 0, sandwichCount = 0;
+    // Contar cada día de la VENTANA EXPANDIDA en UNA SOLA categoría.
+    // Prioridad: día de vacaciones > feriado > sandwich > fin de semana.
+    // Así la suma de la fórmula (vac + feriados + fds [+ sandwich]) siempre
+    // cuadra con el total de días de descanso. Sin esta exclusión mutua un
+    // feriado que cae sábado se contaba dos veces (feriado y fds), y un día
+    // de vacaciones que además era sandwich se contaba como vac y sandwich.
+    const vacStart = new Date(opp.startDate);
+    const vacEnd = new Date(opp.startDate);
+    vacEnd.setDate(vacEnd.getDate() + opp.daysFree - 1);
+
+    let vacCount = 0, holidayCount = 0, weekendCount = 0, sandwichCount = 0;
     let holidayNames = [], sandwichNames = [];
     let current = new Date(expandedStart);
     while (current <= expandedEnd) {
+      const isVac = current >= vacStart && current <= vacEnd;
       const isFDS = current.getDay() === 0 || current.getDay() === 6;
       const isSandwich = allSandwiches.some(s => s.toDateString() === current.toDateString());
       const feriadoObj = feriados.find(f => f.fecha.toDateString() === current.toDateString());
 
-      if (feriadoObj) {
+      if (isVac) {
+        vacCount++;
+      } else if (feriadoObj) {
         holidayCount++;
         if (!holidayNames.includes(feriadoObj.nombre)) {
           holidayNames.push(feriadoObj.nombre);
@@ -525,8 +525,9 @@ function renderVacacionesExpanded() {
       } else if (isSandwich) {
         sandwichCount++;
         sandwichNames.push(`${current.getDate()}/${current.getMonth() + 1}`);
+      } else if (isFDS) {
+        weekendCount++;
       }
-      if (isFDS) weekendCount++;
       current.setDate(current.getDate() + 1);
     }
 
@@ -540,7 +541,7 @@ function renderVacacionesExpanded() {
     // Generar fórmula horizontal
     let formulaHTML = `
       <div class="vac-formula-box">
-        <span class="vac-formula-value">${opp.daysFree}</span>
+        <span class="vac-formula-value">${vacCount}</span>
         <span class="vac-formula-label">vac</span>
       </div>
       <div class="vac-formula-box operator">+</div>
@@ -611,10 +612,8 @@ function renderVacacionesExpanded() {
     `;
     grid.appendChild(item);
   });
-  console.log('renderVacacionesExpanded() completed successfully');
   } catch (err) {
-    console.error('ERROR in renderVacacionesExpanded:', err.message);
-    console.error('Stack:', err.stack);
+    console.error('renderVacacionesExpanded:', err);
     const grid = document.getElementById('vacExpandedGrid');
     if (grid) {
       grid.innerHTML = '<p style="color:red;padding:20px"><strong>Error:</strong> ' + err.message + '</p>';
@@ -626,8 +625,11 @@ function generateMiniCalendar(startDate, opp) {
   const { feriados } = DATA[currentYear];
   const allSandwiches = calcSW(feriados);
 
-  // Calcular el rango de semanas afectadas
-  const windowEnd = new Date(opp.startDate.getTime() + opp.daysFree * 24 * 60 * 60 * 1000);
+  // Último día de la ventana de vacaciones (inclusive).
+  // Se usa setDate en vez de sumar milisegundos: la suma de ms daba un día de
+  // más y además es sensible al cambio de hora chileno (septiembre / abril).
+  const windowEnd = new Date(opp.startDate);
+  windowEnd.setDate(windowEnd.getDate() + opp.daysFree - 1);
 
   // Primera fecha: lunes de la semana que contiene opp.startDate (o antes)
   const calStart = new Date(opp.startDate);
@@ -635,7 +637,7 @@ function generateMiniCalendar(startDate, opp) {
 
   // Última fecha: domingo de la semana que contiene windowEnd
   const calEnd = new Date(windowEnd);
-  calEnd.setDate(calEnd.getDate() + (7 - ((calEnd.getDay() + 6) % 7)) % 7); // Ir al domingo
+  calEnd.setDate(calEnd.getDate() + (6 - ((calEnd.getDay() + 6) % 7))); // Ir al domingo
 
   let html = `<div class="vac-mini-calendar">
     <div class="vac-calendar-header">${MESES_F[calStart.getMonth()]} ${calStart.getFullYear()}</div>
