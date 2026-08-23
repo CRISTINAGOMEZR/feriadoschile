@@ -143,28 +143,6 @@
       <div class="acts-grid" id="actsGrid"></div>
     </div>
 
-    <div style="height:40px"></div>
-    <button class="vac-expand-btn" id="vacExpandBtn" onclick="toggleVacacionesExpanded()">
-      <span class="vac-expand-icon">▼</span>
-      Recomiéndame mis vacaciones
-    </button>
-
-    <div class="vac-expanded" id="vacExpanded">
-      <div class="vac-expanded-header">
-        <h3>Mejores oportunidades para tus vacaciones</h3>
-        <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
-          <label class="vac-toggle-label">
-            <input type="checkbox" id="vacToggleSandwich" checked onchange="renderVacacionesExpanded()">
-            <span>Contar sándwiches como gratis</span>
-          </label>
-          <div class="vac-days-input-group">
-            <label for="vacDaysAvailable">Días de vacaciones disponibles:</label>
-            <input type="number" id="vacDaysAvailable" min="0" max="30" value="0" onchange="renderVacacionesExpanded()" />
-          </div>
-        </div>
-      </div>
-      <div class="vac-expanded-grid" id="vacExpandedGrid"></div>
-    </div>
   </div>
 
 <!-- FAQ -->
