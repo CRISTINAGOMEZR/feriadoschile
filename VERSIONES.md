@@ -6,6 +6,24 @@
 
 ---
 
+## v1.7 — Recomiéndame mis vacaciones + empty state "por mes" · 2026-08-30
+
+| Campo | Detalle |
+|---|---|
+| **Hash** | `d24f5ff` |
+| **Estado** | ✅ En producción |
+
+### Cambios
+- Nueva sección "Recomiéndame mis vacaciones": modal expandible con fórmula de días de descanso, mini calendario visual e input de días disponibles
+- D-05: empty state en vista "Por mes" cuando el mes no tiene feriados (mensaje + botón "Ver todo el año")
+
+### Rollback
+```bash
+git reset --hard a4a7ba4   # vuelve a v1.6
+```
+
+---
+
 ## v1.6 — Sprint 2: Rendimiento, Accesibilidad, Landscape · 2026-04-16
 
 | Campo | Detalle |
