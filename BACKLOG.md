@@ -83,8 +83,9 @@
 | D-02 | **Rediseño de paleta + design system** | 🟡 Pendiente | Definir tokens de color, tipografía, espaciado y componentes base antes de seguir iterando. Incluye modo oscuro como opción. |
 | D-03 | **Verificar accesibilidad en todos los dispositivos** | 🟡 Pendiente | Desktop, tablet y móvil. WCAG AA mínimo: contraste, aria-labels, navegación por teclado, tamaño de tap targets en móvil |
 | D-04 | Accesibilidad: contraste `--muted` | 🟡 Pendiente | `#7B8DB0` sobre `#F5F7FF` puede fallar WCAG AA — parte de D-03 |
-| D-05 | Empty state en vista "por mes" sin feriados | 🟡 Pendiente | Muestra lista vacía sin mensaje explicativo |
+| D-05 | Empty state en vista "por mes" sin feriados | ✅ Hecho | Implementado en `d24f5ff` — mensaje + botón "Ver todo el año" |
 | D-06 | Ampliar panoramas con imágenes o ilustraciones | 💡 Idea | Cards de actividades son texto puro; imagen destacada mejoraría el visual |
+| D-07 | Header del mini calendario no indica cruce de mes/año | 🟡 Pendiente | En "Recomiéndame mis vacaciones", una ventana que cruza fin de año (ej. 28 dic–4 ene) muestra solo "Diciembre" con números de enero sin indicar el cambio. Para `ui-reviewer` — requiere decisión de diseño, no es bug de datos. |
 
 ---
 
