@@ -6,6 +6,57 @@
 
 ---
 
+## v1.7 — Fix: motor de "Recomiéndame mis vacaciones" · 2026-09-06
+
+| Campo | Detalle |
+|---|---|
+| **Hash** | `pendiente` |
+| **Estado** | 🟡 En PR, esperando aprobación |
+
+### Contexto
+La feature "Recomiéndame mis vacaciones" (js/app.js, sección VACACIONES) se construyó en un tramo
+de commits previos (`0590fb4`…`d24f5ff`) sin quedar documentada en este archivo ni en BACKLOG.md.
+Una auditoría de correctness encontró que el motor de cálculo no funcionaba como se pretendía.
+
+### Cambios
+- `countRestWindow` ahora expande la ventana de descanso real pedida (`windowStart..windowEnd`),
+  no solo el primer día. Antes, `daysFree` nunca influía en el cálculo: pedir 1 o 10 días de
+  vacaciones daba exactamente el mismo resultado, y ninguna oportunidad de más de 1 día llegaba
+  a mostrarse (0 de 120 tarjetas simuladas en 2025-2027).
+- El listado ya no recomienda fechas pasadas: se filtra desde `today` cuando el año seleccionado
+  es el actual.
+- La fórmula visible (`vac + feriados + fds + sandwich = días`) ya no cuenta un feriado de fin de
+  semana dos veces (en "feriados" y en "fds"), ni suma los "días de vacaciones disponibles" al
+  total como si fueran descanso extra — ese campo ahora solo filtra qué tan largo puede ser el
+  plan pedido, saneado a un rango 0-30.
+- Se descartan oportunidades que no aprovechan ningún feriado ni sandwich (antes, cualquier
+  viernes o lunes suelto aparecía en la lista con "aprovechando: " vacío).
+- El texto "De X a Y" y el mini calendario ahora usan la ventana de descanso ya expandida en vez
+  de recalcularla con una fórmula que tenía un off-by-one (generaba una fila huérfana en el
+  calendario y marcaba un día de más como "tu ventana").
+- Cambiar de año (botones 2025/2026/2027) con el panel de vacaciones abierto ahora lo
+  re-renderiza; antes quedaba mostrando datos del año anterior.
+- Se eliminaron 13 `console.log` de depuración que quedaron en el código de producción.
+- **Fuera de este cambio, a propósito:** el motor todavía no ve feriados del año siguiente/anterior
+  al expandir una ventana cerca del 31 de diciembre (p. ej. no detecta que 31/12/2026 + Año Nuevo
+  2027 + fin de semana da 4 días de descanso). Es un cambio de mayor alcance —requiere manejar años
+  sin datos cargados (2024, 2028)— y se deja para un PR aparte.
+
+### Verificación
+Se corrió el algoritmo real (extraído de `js/app.js`, con los datos reales de `js/data.js`) en
+Node para los 3 años y ambos estados del toggle "Contar sándwiches como gratis": 120 tarjetas en
+total, 0 fechas pasadas, 0 fórmulas que no cuadran, 0 "aprovechando" vacíos. Se probó también en
+el navegador (`python3 -m http.server 8765`, Chromium headless, 1280px y 375px): el panel abre,
+calcula y cambia de año sin errores de consola atribuibles al código (los únicos errores en
+consola son de red, por bloqueo de Google Fonts/Analytics en el entorno de pruebas).
+
+### Rollback
+```bash
+git revert <hash-de-este-commit>
+```
+
+---
+
 ## v1.6 — Sprint 2: Rendimiento, Accesibilidad, Landscape · 2026-04-16
 
 | Campo | Detalle |
