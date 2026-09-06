@@ -103,6 +103,7 @@
 
 | # | Tarea | Estado | Notas |
 |---|---|---|---|
+| T-02 | Vacaciones: `isRestDay` no ve feriados del año siguiente/anterior | 🟡 Pendiente | Al expandir una ventana cerca del 31 de diciembre no detecta el Año Nuevo del año siguiente (ni, simétricamente, el 31/12 anterior en enero). Requiere manejar años sin datos cargados (2024, 2028) — dejado fuera de v1.7 a propósito, ver VERSIONES.md |
 | T-01a | Extraer `matchesSeason(a, season)` helper | 🟡 Pendiente | Predicado duplicado en `getActsForCat` y `renderActividades` |
 | T-01b | Derivar `allCats` desde `Object.keys(CAT_LABELS)` | 🟡 Pendiente | Lista hardcodeada que puede desincronizarse |
 | T-01c | Eliminar variable `actCatFilter` (dead state) | 🟡 Pendiente | Se escribe pero nunca se lee — confuso |
@@ -144,6 +145,8 @@
 | — | Crear CLAUDE.md y BACKLOG.md | 2026-04-15 |
 | B-03 | **Etapa 1:** eliminar página Fuente y feriados.cl, reescribir FAQ, scroll en lista, stats x/Y, toggle sandwich, sin iconos, favicon | 2026-04-15 |
 | B-04 | **Etapa 2:** cards regionales estilo f-card, sección panoramas 25 actividades curadas, filtros por temporada/categoría, fixes UI (X banner, toggle funcional, próximo feriado azul) | 2026-04-15 |
+| B-05 | Feature "Recomiéndame mis vacaciones" (modal expandible, motor de oportunidades, fórmula visual, mini calendario) — nunca quedó documentada al construirse | 2026-04-16 |
+| B-06 | Fix del motor de Vacaciones: `countRestWindow` ignoraba `daysFree`, ranking mostraba fechas pasadas, fórmula visible no cuadraba, "aprovechando" vacío en varias tarjetas, panel no se actualizaba al cambiar de año. Ver VERSIONES.md v1.7 | 2026-09-06 |
 
 ---
 
