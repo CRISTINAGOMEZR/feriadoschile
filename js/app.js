@@ -1,4 +1,5 @@
 // ===================== STATE =====================
+// Placeholder: el año real se resuelve en INIT a partir de new Date() (ver resolveYear).
 let currentYear = 2026;
 let currentView = 'lista';
 let currentMes = 'todos';
@@ -49,17 +50,35 @@ function animCount(el,target){
 }
 
 // ===================== SET YEAR =====================
+// Años con datos en DATA, ordenados ascendentemente.
+function availableYears(){return Object.keys(DATA).map(Number).sort((a,b)=>a-b);}
+
+// Devuelve el año pedido si existe en DATA; si no, el año disponible más cercano.
+function resolveYear(yr){
+  const years=availableYears();
+  if(!years.length)return yr;
+  if(DATA[yr])return yr;
+  return years.reduce((best,cur)=>Math.abs(cur-yr)<Math.abs(best-yr)?cur:best,years[0]);
+}
+
+// Sincroniza el chrome del año (botones nav/hero, título y gradiente) con currentYear.
+function syncYearUI(yr){
+  availableYears().forEach(y=>{
+    const navBtn=document.getElementById('yr-'+y);
+    const heroBtn=document.getElementById('hy-'+y);
+    if(navBtn)navBtn.classList.toggle('active',y===yr);
+    if(heroBtn)heroBtn.classList.toggle('active',y===yr);
+  });
+  document.getElementById('heroYear').textContent=yr;
+  const grad=HERO_GRADIENTS[yr]||HERO_GRADIENTS[availableYears()[0]];
+  if(grad)document.getElementById('heroEl').style.background=grad;
+}
+
 function setYear(yr){
-  currentYear=yr;
+  currentYear=resolveYear(yr);
   currentMes='todos';
 
-  [2025,2026,2027].forEach(y=>{
-    document.getElementById('yr-'+y).classList.toggle('active',y===yr);
-    document.getElementById('hy-'+y).classList.toggle('active',y===yr);
-  });
-
-  document.getElementById('heroYear').textContent=yr;
-  document.getElementById('heroEl').style.background=HERO_GRADIENTS[yr];
+  syncYearUI(currentYear);
 
   document.getElementById('page-home').classList.add('year-fade');
   setTimeout(()=>document.getElementById('page-home').classList.remove('year-fade'),400);
@@ -116,7 +135,20 @@ function renderAll(){
     document.getElementById('p-dias').textContent=feriados.length;
     document.getElementById('p-txt').textContent='feriados en total';
   } else {
-    proxWrap.style.display='none';
+    // Año en curso sin feriados restantes (ej. 26-31 dic): caer al primer feriado del año siguiente.
+    const dataSig=DATA[currentYear+1];
+    const proxSig=(dataSig&&dataSig.feriados.length)?dataSig.feriados.slice().sort((a,b)=>a.fecha-b.fecha)[0]:null;
+    if(proxSig){
+      proxWrap.style.display='block';
+      const diffSig=Math.round((proxSig.fecha-today)/86400000);
+      document.getElementById('p-tag').textContent='Próximo feriado';
+      document.getElementById('p-nombre').textContent=proxSig.nombre+(proxSig.irr?' · Irrenunciable':'');
+      document.getElementById('p-fecha').textContent=DIAS[proxSig.fecha.getDay()]+', '+proxSig.fecha.getDate()+' de '+MESES_F[proxSig.fecha.getMonth()]+' de '+proxSig.fecha.getFullYear();
+      document.getElementById('p-dias').textContent=diffSig;
+      document.getElementById('p-txt').textContent=diffSig===1?'día restante':'días restantes';
+    } else {
+      proxWrap.style.display='none';
+    }
   }
 
   // Sandwich desc
@@ -683,4 +715,6 @@ for(let i=0;i<28;i++){
 }
 
 // ===================== INIT =====================
+currentYear=resolveYear(today.getFullYear());
+syncYearUI(currentYear);
 renderAll();

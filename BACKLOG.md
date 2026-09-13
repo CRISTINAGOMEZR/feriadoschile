@@ -125,10 +125,11 @@
 
 | # | Tarea | Cuándo | Notas |
 |---|---|---|---|
-| Y-01 | ⚠️ Agregar datos del año nuevo (2028) | **Octubre–Noviembre 2026** | Ver sección "Actualización Anual" en CLAUDE.md |
+| Y-01 | ⚠️ Agregar datos del año nuevo (2028) | **Octubre–Noviembre 2026** | Ver sección "Actualización Anual" en CLAUDE.md. Sin `DATA[año+1]`, el bloque "Próximo feriado" desaparece del 26 al 31 de diciembre |
 | Y-02 | Revisar cambios legislativos en feriados | **Noviembre–Diciembre** | Fuente: bcn.cl |
 | Y-03 | Actualizar sitemap.xml con URLs del año nuevo | Al mismo tiempo que Y-01 | |
 | Y-04 | Actualizar meta tags y title | Al mismo tiempo que Y-01 | Ej: "Feriados Chile 2026, 2027 y 2028" |
+| Y-05 | ⚠️ Al cargar datos de 2030 o 2036: revisar `calcSW` — si el 1-ene cae martes, genera un sandwich el 31-dic del año anterior y se cuela en el listado | **Al cargar DATA[2030]** | Latente, no afecta 2025–2027. `calcSW` solo recorre el año en curso. Detectado 2026-09-13 |
 
 ---
 
