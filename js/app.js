@@ -456,40 +456,28 @@ function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
 }
 
 function toggleVacacionesExpanded() {
-  console.log('toggleVacacionesExpanded() called');
   const expanded = document.getElementById('vacExpanded');
   const btn = document.getElementById('vacExpandBtn');
-  console.log('Found elements:', { expanded: !!expanded, btn: !!btn });
   expanded.classList.toggle('open');
   btn.setAttribute('aria-expanded', expanded.classList.contains('open'));
-  console.log('Toggled class, isOpen:', expanded.classList.contains('open'));
   if (expanded.classList.contains('open')) {
-    console.log('Calling renderVacacionesExpanded...');
     renderVacacionesExpanded();
-    console.log('renderVacacionesExpanded completed');
   }
 }
 
 function renderVacacionesExpanded() {
-  console.log('renderVacacionesExpanded() started');
   try {
     const vacToggleSandwich = document.getElementById('vacToggleSandwich');
-    console.log('vacToggleSandwich found:', !!vacToggleSandwich);
     const countSandwichAsLibre = vacToggleSandwich.checked;
     const { feriados } = DATA[currentYear];
-    console.log('Got feriados:', feriados.length);
     const allSandwiches = calcSW(feriados);
-    console.log('Got sandwiches:', allSandwiches.length);
 
-    console.log('Calling findVacationOpportunities...');
     const opportunities = findVacationOpportunities(feriados, allSandwiches, countSandwichAsLibre);
-    console.log('Found opportunities:', opportunities.length);
 
     const grid = document.getElementById('vacExpandedGrid');
     grid.innerHTML = '';
 
     if (opportunities.length === 0) {
-      console.log('No opportunities, showing message');
       grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 20px;grid-column:1/-1">No hay oportunidades óptimas disponibles.</p>';
       return;
     }
@@ -508,7 +496,9 @@ function renderVacacionesExpanded() {
     const countSandwichAsLibre = vacToggleSandwich.checked;
     const { start: expandedStart, end: expandedEnd } = countRestWindow(opp.startDate, feriados, allSandwiches, countSandwichAsLibre);
 
-    // Contar feriados, fines de semana y sándwiches en la VENTANA EXPANDIDA
+    // Contar feriados, fines de semana y sándwiches en la VENTANA EXPANDIDA.
+    // Cada día se clasifica en UNA sola categoría (vacaciones > feriado > sándwich > fds)
+    // para que la fórmula sume exactamente el total de días de descanso mostrado.
     let holidayCount = 0, weekendCount = 0, sandwichCount = 0;
     let holidayNames = [], sandwichNames = [];
     let current = new Date(expandedStart);
@@ -516,17 +506,22 @@ function renderVacacionesExpanded() {
       const isFDS = current.getDay() === 0 || current.getDay() === 6;
       const isSandwich = allSandwiches.some(s => s.toDateString() === current.toDateString());
       const feriadoObj = feriados.find(f => f.fecha.toDateString() === current.toDateString());
+      // Los días que pides de vacaciones ya están contados en la caja "vac"
+      const esDiaDeVacaciones = current >= opp.startDate && current <= endDate;
 
       if (feriadoObj) {
         holidayCount++;
         if (!holidayNames.includes(feriadoObj.nombre)) {
           holidayNames.push(feriadoObj.nombre);
         }
+      } else if (esDiaDeVacaciones) {
+        // no se cuenta aparte
       } else if (isSandwich) {
         sandwichCount++;
         sandwichNames.push(`${current.getDate()}/${current.getMonth() + 1}`);
+      } else if (isFDS) {
+        weekendCount++;
       }
-      if (isFDS) weekendCount++;
       current.setDate(current.getDate() + 1);
     }
 
@@ -602,7 +597,7 @@ function renderVacacionesExpanded() {
       </div>
 
       <!-- MINI CALENDAR -->
-      ${generateMiniCalendar(opp.startDate, opp)}
+      ${generateMiniCalendar(opp.startDate, opp, countSandwichAsLibre)}
 
       <!-- TIMELINE VISUAL -->
       <div class="vac-timeline-inline">
@@ -611,23 +606,22 @@ function renderVacacionesExpanded() {
     `;
     grid.appendChild(item);
   });
-  console.log('renderVacacionesExpanded() completed successfully');
   } catch (err) {
-    console.error('ERROR in renderVacacionesExpanded:', err.message);
-    console.error('Stack:', err.stack);
+    console.error(err);
     const grid = document.getElementById('vacExpandedGrid');
     if (grid) {
-      grid.innerHTML = '<p style="color:red;padding:20px"><strong>Error:</strong> ' + err.message + '</p>';
+      grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 20px;grid-column:1/-1">No pudimos calcular las recomendaciones en este momento. Intenta recargar la página.</p>';
     }
   }
 }
 
-function generateMiniCalendar(startDate, opp) {
+function generateMiniCalendar(startDate, opp, countSandwichAsLibre) {
   const { feriados } = DATA[currentYear];
   const allSandwiches = calcSW(feriados);
 
-  // Calcular el rango de semanas afectadas
-  const windowEnd = new Date(opp.startDate.getTime() + opp.daysFree * 24 * 60 * 60 * 1000);
+  // Calcular el rango de semanas afectadas (la ventana son daysFree días contando el primero)
+  const windowEnd = new Date(opp.startDate);
+  windowEnd.setDate(windowEnd.getDate() + opp.daysFree - 1);
 
   // Primera fecha: lunes de la semana que contiene opp.startDate (o antes)
   const calStart = new Date(opp.startDate);
@@ -635,7 +629,7 @@ function generateMiniCalendar(startDate, opp) {
 
   // Última fecha: domingo de la semana que contiene windowEnd
   const calEnd = new Date(windowEnd);
-  calEnd.setDate(calEnd.getDate() + (7 - ((calEnd.getDay() + 6) % 7)) % 7); // Ir al domingo
+  calEnd.setDate(calEnd.getDate() + (6 - ((calEnd.getDay() + 6) % 7))); // Ir al domingo
 
   let html = `<div class="vac-mini-calendar">
     <div class="vac-calendar-header">${MESES_F[calStart.getMonth()]} ${calStart.getFullYear()}</div>
@@ -650,9 +644,10 @@ function generateMiniCalendar(startDate, opp) {
     const isFDS = current.getDay() === 0 || current.getDay() === 6;
     const inRange = current >= opp.startDate && current <= windowEnd;
 
+    // Sándwich solo cuenta como descanso si el toggle está activo
     let clase = 'vac-cal-day';
     if (isFer) clase += ' holiday';
-    else if (isFDS || isSandwich) clase += ' rest';
+    else if (isFDS || (isSandwich && countSandwichAsLibre)) clase += ' rest';
     else if (inRange) clase += ' range';
     else clase += ' work';
 
