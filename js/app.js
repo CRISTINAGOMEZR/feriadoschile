@@ -65,6 +65,7 @@ function setYear(yr){
   setTimeout(()=>document.getElementById('page-home').classList.remove('year-fade'),400);
 
   renderAll();
+  if (document.getElementById('vacExpanded').classList.contains('open')) renderVacacionesExpanded();
   showPage('home');
 }
 
@@ -402,21 +403,14 @@ function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
   const seen = new Set();
 
   for (let daysFree = 1; daysFree <= 10; daysFree++) {
-    const current = new Date(startOfYear);
+    const current = new Date(Math.max(startOfYear, today));
 
     while (current <= endOfYear) {
       const isFer = isFeriado(current, feriados);
       const isSW = sandwiches.some(s => s.toDateString() === current.toDateString());
       const isFDS = current.getDay() === 0 || current.getDay() === 6;
 
-      let canStartHere = false;
-      if (!isFer && !isFDS) {
-        if (isSW && countSandwichAsLibre) {
-          canStartHere = true;
-        } else if (!isSW) {
-          canStartHere = true;
-        }
-      }
+      const canStartHere = !isFer && !isFDS && !(isSW && countSandwichAsLibre);
 
       if (canStartHere) {
         const windowStart = new Date(current);
@@ -526,7 +520,7 @@ function renderVacacionesExpanded() {
         sandwichCount++;
         sandwichNames.push(`${current.getDate()}/${current.getMonth() + 1}`);
       }
-      if (isFDS) weekendCount++;
+      if (isFDS && !feriadoObj) weekendCount++;
       current.setDate(current.getDate() + 1);
     }
 
@@ -627,7 +621,8 @@ function generateMiniCalendar(startDate, opp) {
   const allSandwiches = calcSW(feriados);
 
   // Calcular el rango de semanas afectadas
-  const windowEnd = new Date(opp.startDate.getTime() + opp.daysFree * 24 * 60 * 60 * 1000);
+  const windowEnd = new Date(opp.startDate);
+  windowEnd.setDate(windowEnd.getDate() + opp.daysFree - 1);
 
   // Primera fecha: lunes de la semana que contiene opp.startDate (o antes)
   const calStart = new Date(opp.startDate);
