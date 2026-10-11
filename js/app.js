@@ -65,6 +65,7 @@ function setYear(yr){
   setTimeout(()=>document.getElementById('page-home').classList.remove('year-fade'),400);
 
   renderAll();
+  if(document.getElementById('vacExpanded').classList.contains('open'))renderVacacionesExpanded();
   showPage('home');
 }
 
@@ -372,147 +373,109 @@ function isRestDay(d, feriados, sandwiches, countSandwichAsLibre) {
   return false;
 }
 
-function countRestWindow(d, feriados, sandwiches, countSandwichAsLibre) {
-  let start = new Date(d), end = new Date(d);
-  let back = new Date(d);
-  back.setDate(back.getDate() - 1);
-  while (isRestDay(back, feriados, sandwiches, countSandwichAsLibre)) {
+// Ventana de descanso para vacaciones que empiezan en `d` y consumen `daysFree`
+// días hábiles (los días de descanso intermedios no consumen vacaciones).
+// Se expande hacia atrás y adelante mientras haya días de descanso.
+function countRestWindow(d, daysFree, feriados, sandwiches, countSandwichAsLibre) {
+  const rest = x => isRestDay(x, feriados, sandwiches, countSandwichAsLibre);
+  let vacEnd = new Date(d);
+  let used = 1;
+  while (used < daysFree) {
+    vacEnd.setDate(vacEnd.getDate() + 1);
+    if (!rest(vacEnd)) used++;
+  }
+  let start = new Date(d), end = new Date(vacEnd);
+  let back = addDays(d, -1);
+  while (rest(back)) {
     start = new Date(back);
     back.setDate(back.getDate() - 1);
   }
-  let fwd = new Date(d);
-  fwd.setDate(fwd.getDate() + 1);
-  while (isRestDay(fwd, feriados, sandwiches, countSandwichAsLibre)) {
+  let fwd = addDays(vacEnd, 1);
+  while (rest(fwd)) {
     end = new Date(fwd);
     fwd.setDate(fwd.getDate() + 1);
   }
-  let cnt = 0, cur = new Date(start);
-  while (cur <= end) {
-    cnt++;
-    cur.setDate(cur.getDate() + 1);
-  }
-  return {start, end, count: cnt};
+  const cnt = Math.round((end - start) / 86400000) + 1;
+  return {start, end, vacEnd, count: cnt};
 }
 
-function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
+function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre, daysAvailable) {
   const opportunities = [];
   const year = currentYear;
   const startOfYear = new Date(year, 0, 1);
   const endOfYear = new Date(year, 11, 31);
+  // Solo fechas futuras: nunca recomendar días que ya pasaron
+  const firstDay = addDays(today, 1) > startOfYear ? addDays(today, 1) : startOfYear;
+  const maxDays = daysAvailable > 0 ? Math.min(daysAvailable, 10) : 10;
   const seen = new Set();
 
-  for (let daysFree = 1; daysFree <= 10; daysFree++) {
-    const current = new Date(startOfYear);
+  for (let daysFree = 1; daysFree <= maxDays; daysFree++) {
+    const current = new Date(firstDay);
 
     while (current <= endOfYear) {
-      const isFer = isFeriado(current, feriados);
-      const isSW = sandwiches.some(s => s.toDateString() === current.toDateString());
-      const isFDS = current.getDay() === 0 || current.getDay() === 6;
+      // Se puede empezar solo en un día hábil (no feriado, no fin de semana,
+      // ni sándwich si ya se cuenta como libre)
+      if (!isRestDay(current, feriados, sandwiches, countSandwichAsLibre)) {
+        const win = countRestWindow(current, daysFree, feriados, sandwiches, countSandwichAsLibre);
+        const windowKey = `${win.start.toDateString()}-${win.end.toDateString()}`;
 
-      let canStartHere = false;
-      if (!isFer && !isFDS) {
-        if (isSW && countSandwichAsLibre) {
-          canStartHere = true;
-        } else if (!isSW) {
-          canStartHere = true;
+        if (win.vacEnd <= endOfYear && win.count > daysFree && !seen.has(windowKey)) {
+          seen.add(windowKey);
+          opportunities.push({
+            startDate: new Date(current),
+            vacEnd: win.vacEnd,
+            expandedStart: win.start,
+            expandedEnd: win.end,
+            daysFree: daysFree,
+            totalRestDays: win.count,
+            ratio: win.count / daysFree
+          });
         }
       }
-
-      if (canStartHere) {
-        const windowStart = new Date(current);
-        const windowEnd = new Date(current);
-        windowEnd.setDate(windowEnd.getDate() + daysFree - 1);
-
-        if (windowEnd <= endOfYear) {
-          const {start: expandedStart, end: expandedEnd, count: totalRestDays} = countRestWindow(current, feriados, sandwiches, countSandwichAsLibre);
-          const ratio = totalRestDays / daysFree;
-          const oppKey = `${windowStart.toDateString()}-${daysFree}`;
-
-          if (totalRestDays > daysFree && !seen.has(oppKey)) {
-            seen.add(oppKey);
-            let restDays = [];
-            let c = new Date(expandedStart);
-            while (c <= expandedEnd) {
-              restDays.push(true);
-              c.setDate(c.getDate() + 1);
-            }
-            opportunities.push({
-              key: oppKey,
-              startDate: new Date(windowStart),
-              daysFree: daysFree,
-              totalRestDays: totalRestDays,
-              ratio: ratio,
-              restDays: restDays
-            });
-          }
-        }
-      }
-
       current.setDate(current.getDate() + 1);
     }
   }
 
-  return opportunities.sort((a, b) => b.ratio - a.ratio).slice(0, 20);
+  return opportunities.sort((a, b) => b.ratio - a.ratio || a.startDate - b.startDate).slice(0, 20);
 }
 
 function toggleVacacionesExpanded() {
-  console.log('toggleVacacionesExpanded() called');
   const expanded = document.getElementById('vacExpanded');
   const btn = document.getElementById('vacExpandBtn');
-  console.log('Found elements:', { expanded: !!expanded, btn: !!btn });
   expanded.classList.toggle('open');
   btn.setAttribute('aria-expanded', expanded.classList.contains('open'));
-  console.log('Toggled class, isOpen:', expanded.classList.contains('open'));
-  if (expanded.classList.contains('open')) {
-    console.log('Calling renderVacacionesExpanded...');
-    renderVacacionesExpanded();
-    console.log('renderVacacionesExpanded completed');
-  }
+  if (expanded.classList.contains('open')) renderVacacionesExpanded();
 }
 
 function renderVacacionesExpanded() {
-  console.log('renderVacacionesExpanded() started');
   try {
-    const vacToggleSandwich = document.getElementById('vacToggleSandwich');
-    console.log('vacToggleSandwich found:', !!vacToggleSandwich);
-    const countSandwichAsLibre = vacToggleSandwich.checked;
+    const countSandwichAsLibre = document.getElementById('vacToggleSandwich').checked;
+    const daysAvailable = parseInt(document.getElementById('vacDaysAvailable').value) || 0;
     const { feriados } = DATA[currentYear];
-    console.log('Got feriados:', feriados.length);
     const allSandwiches = calcSW(feriados);
-    console.log('Got sandwiches:', allSandwiches.length);
-
-    console.log('Calling findVacationOpportunities...');
-    const opportunities = findVacationOpportunities(feriados, allSandwiches, countSandwichAsLibre);
-    console.log('Found opportunities:', opportunities.length);
+    const opportunities = findVacationOpportunities(feriados, allSandwiches, countSandwichAsLibre, daysAvailable);
 
     const grid = document.getElementById('vacExpandedGrid');
     grid.innerHTML = '';
 
     if (opportunities.length === 0) {
-      console.log('No opportunities, showing message');
       grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 20px;grid-column:1/-1">No hay oportunidades óptimas disponibles.</p>';
       return;
     }
 
     opportunities.forEach((opp, idx) => {
-    const endDate = new Date(opp.startDate);
-    endDate.setDate(endDate.getDate() + opp.daysFree - 1);
-
-    const daysAvailable = parseInt(document.getElementById('vacDaysAvailable').value) || 0;
-    const totalFormula = opp.totalRestDays + daysAvailable;
+    const endDate = opp.vacEnd;
+    const totalDays = opp.totalRestDays;
 
     const startStr = `${DIAS[opp.startDate.getDay()]} ${opp.startDate.getDate()}<br>${MESES_F[opp.startDate.getMonth()]}`;
     const endStr = `${DIAS[endDate.getDay()]} ${endDate.getDate()}<br>${MESES_F[endDate.getMonth()]}`;
 
-    // Obtener ventana expandida
-    const countSandwichAsLibre = vacToggleSandwich.checked;
-    const { start: expandedStart, end: expandedEnd } = countRestWindow(opp.startDate, feriados, allSandwiches, countSandwichAsLibre);
-
-    // Contar feriados, fines de semana y sándwiches en la VENTANA EXPANDIDA
+    // Clasificar cada día de la VENTANA EXPANDIDA en una sola categoría,
+    // para que feriados + fds + sándwiches + vacaciones = total
     let holidayCount = 0, weekendCount = 0, sandwichCount = 0;
     let holidayNames = [], sandwichNames = [];
-    let current = new Date(expandedStart);
-    while (current <= expandedEnd) {
+    let current = new Date(opp.expandedStart);
+    while (current <= opp.expandedEnd) {
       const isFDS = current.getDay() === 0 || current.getDay() === 6;
       const isSandwich = allSandwiches.some(s => s.toDateString() === current.toDateString());
       const feriadoObj = feriados.find(f => f.fecha.toDateString() === current.toDateString());
@@ -522,17 +485,18 @@ function renderVacacionesExpanded() {
         if (!holidayNames.includes(feriadoObj.nombre)) {
           holidayNames.push(feriadoObj.nombre);
         }
-      } else if (isSandwich) {
+      } else if (isFDS) {
+        weekendCount++;
+      } else if (isSandwich && countSandwichAsLibre) {
         sandwichCount++;
         sandwichNames.push(`${current.getDate()}/${current.getMonth() + 1}`);
       }
-      if (isFDS) weekendCount++;
       current.setDate(current.getDate() + 1);
     }
 
     // Nombres combinados: feriados + sándwiches
     let allNames = [...holidayNames];
-    if (sandwichCount > 0 && countSandwichAsLibre) {
+    if (sandwichCount > 0) {
       allNames.push(`Sandwich(es): ${sandwichNames.join(', ')}`);
     }
     const namesText = allNames.slice(0, 2).join(', ') + (allNames.length > 2 ? '...' : '');
@@ -556,7 +520,7 @@ function renderVacacionesExpanded() {
       </div>
     `;
 
-    if (sandwichCount > 0 && countSandwichAsLibre) {
+    if (sandwichCount > 0) {
       formulaHTML += `
         <div class="vac-formula-box operator">+</div>
         <div class="vac-formula-box">
@@ -567,24 +531,17 @@ function renderVacacionesExpanded() {
       `;
     }
 
-    if (daysAvailable > 0) {
-      formulaHTML += `
-        <div class="vac-formula-box operator">+</div>
-        <div class="vac-formula-box">
-          <span class="vac-formula-value">${daysAvailable}</span>
-          <span class="vac-formula-label">vac disp</span>
-        </div>
-      `;
-    }
-
     formulaHTML += `
       <div class="vac-formula-box equals"></div>
       <div class="vac-formula-box">
-        <span class="vac-formula-value">${totalFormula}</span>
+        <span class="vac-formula-value">${totalDays}</span>
         <span class="vac-formula-label">días</span>
       </div>
     `;
 
+    const rangeText = opp.daysFree > 1
+      ? `De ${startStr.replace('<br>', ' de ')} a ${endStr.replace('<br>', ' de ')}`
+      : `El ${startStr.replace('<br>', ' de ')}`;
     const item = document.createElement('div');
     item.className = 'vac-item';
     item.innerHTML = `
@@ -597,8 +554,8 @@ function renderVacacionesExpanded() {
 
       <!-- DESCRIPCIÓN -->
       <div class="vac-item-desc">
-        <strong>De ${startStr.replace('<br>', ' de ')} a ${endStr.replace('<br>', ' de ')}</strong><br>
-        Tomándote <strong>${opp.daysFree} día${opp.daysFree > 1 ? 's' : ''} de vacaciones</strong>, obtienes <strong>${totalFormula} días de descanso</strong> aprovechando: <strong>${namesText}</strong>
+        <strong>${rangeText}</strong><br>
+        Tomándote <strong>${opp.daysFree} día${opp.daysFree > 1 ? 's' : ''} de vacaciones</strong>, obtienes <strong>${totalDays} días de descanso</strong> aprovechando: <strong>${namesText}</strong>
       </div>
 
       <!-- MINI CALENDAR -->
@@ -606,12 +563,11 @@ function renderVacacionesExpanded() {
 
       <!-- TIMELINE VISUAL -->
       <div class="vac-timeline-inline">
-        ${opp.restDays.map(d => `<div class="vac-day-inline ${d ? 'rest' : 'trabajo'}"></div>`).join('')}
+        ${Array.from({length: totalDays}, () => '<div class="vac-day-inline rest"></div>').join('')}
       </div>
     `;
     grid.appendChild(item);
   });
-  console.log('renderVacacionesExpanded() completed successfully');
   } catch (err) {
     console.error('ERROR in renderVacacionesExpanded:', err.message);
     console.error('Stack:', err.stack);
@@ -626,8 +582,8 @@ function generateMiniCalendar(startDate, opp) {
   const { feriados } = DATA[currentYear];
   const allSandwiches = calcSW(feriados);
 
-  // Calcular el rango de semanas afectadas
-  const windowEnd = new Date(opp.startDate.getTime() + opp.daysFree * 24 * 60 * 60 * 1000);
+  // Último día de vacaciones (inclusive)
+  const windowEnd = opp.vacEnd;
 
   // Primera fecha: lunes de la semana que contiene opp.startDate (o antes)
   const calStart = new Date(opp.startDate);
@@ -635,7 +591,7 @@ function generateMiniCalendar(startDate, opp) {
 
   // Última fecha: domingo de la semana que contiene windowEnd
   const calEnd = new Date(windowEnd);
-  calEnd.setDate(calEnd.getDate() + (7 - ((calEnd.getDay() + 6) % 7)) % 7); // Ir al domingo
+  calEnd.setDate(calEnd.getDate() + (7 - calEnd.getDay()) % 7); // Ir al domingo
 
   let html = `<div class="vac-mini-calendar">
     <div class="vac-calendar-header">${MESES_F[calStart.getMonth()]} ${calStart.getFullYear()}</div>
