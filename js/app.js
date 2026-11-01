@@ -387,7 +387,10 @@ function countRestWindow(d, feriados, sandwiches, countSandwichAsLibre) {
     fwd.setDate(fwd.getDate() + 1);
   }
   let cnt = 0, cur = new Date(start);
-  while (cur <= end) {
+  cur.setHours(12, 0, 0, 0);
+  const last = new Date(end);
+  last.setHours(12, 0, 0, 0);
+  while (cur <= last) {
     cnt++;
     cur.setDate(cur.getDate() + 1);
   }
@@ -397,8 +400,9 @@ function countRestWindow(d, feriados, sandwiches, countSandwichAsLibre) {
 function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
   const opportunities = [];
   const year = currentYear;
-  const startOfYear = new Date(year, 0, 1);
-  const endOfYear = new Date(year, 11, 31);
+  // Mediodía: evita que el cambio de horario de Chile (00:00 inexistente) corra las fechas
+  const startOfYear = new Date(year, 0, 1, 12);
+  const endOfYear = new Date(year, 11, 31, 12);
   const seen = new Set();
 
   for (let daysFree = 1; daysFree <= 10; daysFree++) {
@@ -418,7 +422,8 @@ function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
         }
       }
 
-      if (canStartHere) {
+      // No recomendar fechas que ya pasaron
+      if (canStartHere && current >= today) {
         const windowStart = new Date(current);
         const windowEnd = new Date(current);
         windowEnd.setDate(windowEnd.getDate() + daysFree - 1);
@@ -456,40 +461,31 @@ function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
 }
 
 function toggleVacacionesExpanded() {
-  console.log('toggleVacacionesExpanded() called');
   const expanded = document.getElementById('vacExpanded');
   const btn = document.getElementById('vacExpandBtn');
-  console.log('Found elements:', { expanded: !!expanded, btn: !!btn });
   expanded.classList.toggle('open');
   btn.setAttribute('aria-expanded', expanded.classList.contains('open'));
-  console.log('Toggled class, isOpen:', expanded.classList.contains('open'));
   if (expanded.classList.contains('open')) {
-    console.log('Calling renderVacacionesExpanded...');
     renderVacacionesExpanded();
-    console.log('renderVacacionesExpanded completed');
   }
 }
 
 function renderVacacionesExpanded() {
-  console.log('renderVacacionesExpanded() started');
   try {
     const vacToggleSandwich = document.getElementById('vacToggleSandwich');
-    console.log('vacToggleSandwich found:', !!vacToggleSandwich);
     const countSandwichAsLibre = vacToggleSandwich.checked;
     const { feriados } = DATA[currentYear];
-    console.log('Got feriados:', feriados.length);
     const allSandwiches = calcSW(feriados);
-    console.log('Got sandwiches:', allSandwiches.length);
 
-    console.log('Calling findVacationOpportunities...');
-    const opportunities = findVacationOpportunities(feriados, allSandwiches, countSandwichAsLibre);
-    console.log('Found opportunities:', opportunities.length);
+    const daysAvailable = parseInt(document.getElementById('vacDaysAvailable').value) || 0;
+    // Con días disponibles > 0, solo opciones que se puedan pagar con esos días
+    const opportunities = findVacationOpportunities(feriados, allSandwiches, countSandwichAsLibre)
+      .filter(o => daysAvailable === 0 || o.daysFree <= daysAvailable);
 
     const grid = document.getElementById('vacExpandedGrid');
     grid.innerHTML = '';
 
     if (opportunities.length === 0) {
-      console.log('No opportunities, showing message');
       grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 20px;grid-column:1/-1">No hay oportunidades óptimas disponibles.</p>';
       return;
     }
@@ -498,8 +494,7 @@ function renderVacacionesExpanded() {
     const endDate = new Date(opp.startDate);
     endDate.setDate(endDate.getDate() + opp.daysFree - 1);
 
-    const daysAvailable = parseInt(document.getElementById('vacDaysAvailable').value) || 0;
-    const totalFormula = opp.totalRestDays + daysAvailable;
+    const totalFormula = opp.totalRestDays;
 
     const startStr = `${DIAS[opp.startDate.getDay()]} ${opp.startDate.getDate()}<br>${MESES_F[opp.startDate.getMonth()]}`;
     const endStr = `${DIAS[endDate.getDay()]} ${endDate.getDate()}<br>${MESES_F[endDate.getMonth()]}`;
@@ -526,7 +521,7 @@ function renderVacacionesExpanded() {
         sandwichCount++;
         sandwichNames.push(`${current.getDate()}/${current.getMonth() + 1}`);
       }
-      if (isFDS) weekendCount++;
+      if (isFDS && !feriadoObj) weekendCount++;
       current.setDate(current.getDate() + 1);
     }
 
@@ -567,16 +562,6 @@ function renderVacacionesExpanded() {
       `;
     }
 
-    if (daysAvailable > 0) {
-      formulaHTML += `
-        <div class="vac-formula-box operator">+</div>
-        <div class="vac-formula-box">
-          <span class="vac-formula-value">${daysAvailable}</span>
-          <span class="vac-formula-label">vac disp</span>
-        </div>
-      `;
-    }
-
     formulaHTML += `
       <div class="vac-formula-box equals"></div>
       <div class="vac-formula-box">
@@ -611,7 +596,6 @@ function renderVacacionesExpanded() {
     `;
     grid.appendChild(item);
   });
-  console.log('renderVacacionesExpanded() completed successfully');
   } catch (err) {
     console.error('ERROR in renderVacacionesExpanded:', err.message);
     console.error('Stack:', err.stack);
@@ -627,7 +611,8 @@ function generateMiniCalendar(startDate, opp) {
   const allSandwiches = calcSW(feriados);
 
   // Calcular el rango de semanas afectadas
-  const windowEnd = new Date(opp.startDate.getTime() + opp.daysFree * 24 * 60 * 60 * 1000);
+  const windowEnd = new Date(opp.startDate);
+  windowEnd.setDate(windowEnd.getDate() + opp.daysFree - 1);
 
   // Primera fecha: lunes de la semana que contiene opp.startDate (o antes)
   const calStart = new Date(opp.startDate);
