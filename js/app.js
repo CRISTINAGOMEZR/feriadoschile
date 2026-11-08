@@ -372,131 +372,107 @@ function isRestDay(d, feriados, sandwiches, countSandwichAsLibre) {
   return false;
 }
 
-function countRestWindow(d, feriados, sandwiches, countSandwichAsLibre) {
-  let start = new Date(d), end = new Date(d);
-  let back = new Date(d);
+// Feriados del año seleccionado más los de los años vecinos, para que las ventanas
+// que cruzan el 31/12 -> 1/1 vean el feriado del otro lado (ej. 1 de enero de 2027).
+function feriadosConVecinos(year) {
+  return [year - 1, year, year + 1].filter(y => DATA[y]).flatMap(y => DATA[y].feriados);
+}
+
+// Toma `daysFree` días hábiles seguidos desde `startDate` (los feriados, fines de semana
+// y sándwiches libres no consumen vacaciones) y expande la ventana hacia ambos lados
+// por todos los días de descanso contiguos.
+function buildRestWindow(startDate, daysFree, feriados, sandwiches, countSandwichAsLibre) {
+  const vacDays = [];
+  const cur = new Date(startDate);
+  while (vacDays.length < daysFree) {
+    if (!isRestDay(cur, feriados, sandwiches, countSandwichAsLibre)) vacDays.push(new Date(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
+  let start = new Date(vacDays[0]);
+  let end = new Date(vacDays[vacDays.length - 1]);
+  const back = new Date(start);
   back.setDate(back.getDate() - 1);
   while (isRestDay(back, feriados, sandwiches, countSandwichAsLibre)) {
     start = new Date(back);
     back.setDate(back.getDate() - 1);
   }
-  let fwd = new Date(d);
+  const fwd = new Date(end);
   fwd.setDate(fwd.getDate() + 1);
   while (isRestDay(fwd, feriados, sandwiches, countSandwichAsLibre)) {
     end = new Date(fwd);
     fwd.setDate(fwd.getDate() + 1);
   }
-  let cnt = 0, cur = new Date(start);
-  while (cur <= end) {
-    cnt++;
-    cur.setDate(cur.getDate() + 1);
-  }
-  return {start, end, count: cnt};
+  const count = Math.round((end - start) / 86400000) + 1;
+  return {start, end, vacDays, count};
 }
 
 function findVacationOpportunities(feriados, sandwiches, countSandwichAsLibre) {
-  const opportunities = [];
   const year = currentYear;
-  const startOfYear = new Date(year, 0, 1);
   const endOfYear = new Date(year, 11, 31);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  // En el año en curso no se recomiendan fechas que ya pasaron
+  const first = (today.getFullYear() === year) ? today : new Date(year, 0, 1);
+  const opportunities = [];
   const seen = new Set();
 
   for (let daysFree = 1; daysFree <= 10; daysFree++) {
-    const current = new Date(startOfYear);
-
+    const current = new Date(first);
     while (current <= endOfYear) {
-      const isFer = isFeriado(current, feriados);
-      const isSW = sandwiches.some(s => s.toDateString() === current.toDateString());
-      const isFDS = current.getDay() === 0 || current.getDay() === 6;
-
-      let canStartHere = false;
-      if (!isFer && !isFDS) {
-        if (isSW && countSandwichAsLibre) {
-          canStartHere = true;
-        } else if (!isSW) {
-          canStartHere = true;
+      if (!isRestDay(current, feriados, sandwiches, countSandwichAsLibre)) {
+        const w = buildRestWindow(current, daysFree, feriados, sandwiches, countSandwichAsLibre);
+        const lastVac = w.vacDays[w.vacDays.length - 1];
+        const key = `${w.start.toDateString()}-${w.end.toDateString()}-${daysFree}`;
+        if (lastVac <= endOfYear && w.count > daysFree && !seen.has(key)) {
+          seen.add(key);
+          opportunities.push({
+            key,
+            startDate: new Date(w.vacDays[0]),
+            endDate: new Date(lastVac),
+            vacDays: w.vacDays,
+            windowStart: w.start,
+            windowEnd: w.end,
+            daysFree,
+            totalRestDays: w.count,
+            ratio: w.count / daysFree,
+            restDays: Array.from({length: w.count}, () => true)
+          });
         }
       }
-
-      if (canStartHere) {
-        const windowStart = new Date(current);
-        const windowEnd = new Date(current);
-        windowEnd.setDate(windowEnd.getDate() + daysFree - 1);
-
-        if (windowEnd <= endOfYear) {
-          const {start: expandedStart, end: expandedEnd, count: totalRestDays} = countRestWindow(current, feriados, sandwiches, countSandwichAsLibre);
-          const ratio = totalRestDays / daysFree;
-          const oppKey = `${windowStart.toDateString()}-${daysFree}`;
-
-          if (totalRestDays > daysFree && !seen.has(oppKey)) {
-            seen.add(oppKey);
-            let restDays = [];
-            let c = new Date(expandedStart);
-            while (c <= expandedEnd) {
-              restDays.push(true);
-              c.setDate(c.getDate() + 1);
-            }
-            opportunities.push({
-              key: oppKey,
-              startDate: new Date(windowStart),
-              daysFree: daysFree,
-              totalRestDays: totalRestDays,
-              ratio: ratio,
-              restDays: restDays
-            });
-          }
-        }
-      }
-
       current.setDate(current.getDate() + 1);
     }
   }
 
-  return opportunities.sort((a, b) => b.ratio - a.ratio).slice(0, 20);
+  return opportunities
+    .sort((a, b) => (b.ratio - a.ratio) || (a.startDate - b.startDate))
+    .slice(0, 20);
 }
 
 function toggleVacacionesExpanded() {
-  console.log('toggleVacacionesExpanded() called');
   const expanded = document.getElementById('vacExpanded');
   const btn = document.getElementById('vacExpandBtn');
-  console.log('Found elements:', { expanded: !!expanded, btn: !!btn });
   expanded.classList.toggle('open');
   btn.setAttribute('aria-expanded', expanded.classList.contains('open'));
-  console.log('Toggled class, isOpen:', expanded.classList.contains('open'));
-  if (expanded.classList.contains('open')) {
-    console.log('Calling renderVacacionesExpanded...');
-    renderVacacionesExpanded();
-    console.log('renderVacacionesExpanded completed');
-  }
+  if (expanded.classList.contains('open')) renderVacacionesExpanded();
 }
 
 function renderVacacionesExpanded() {
-  console.log('renderVacacionesExpanded() started');
   try {
-    const vacToggleSandwich = document.getElementById('vacToggleSandwich');
-    console.log('vacToggleSandwich found:', !!vacToggleSandwich);
-    const countSandwichAsLibre = vacToggleSandwich.checked;
-    const { feriados } = DATA[currentYear];
-    console.log('Got feriados:', feriados.length);
+    const countSandwichAsLibre = document.getElementById('vacToggleSandwich').checked;
+    const feriados = feriadosConVecinos(currentYear);
     const allSandwiches = calcSW(feriados);
-    console.log('Got sandwiches:', allSandwiches.length);
-
-    console.log('Calling findVacationOpportunities...');
     const opportunities = findVacationOpportunities(feriados, allSandwiches, countSandwichAsLibre);
-    console.log('Found opportunities:', opportunities.length);
 
     const grid = document.getElementById('vacExpandedGrid');
     grid.innerHTML = '';
 
     if (opportunities.length === 0) {
-      console.log('No opportunities, showing message');
       grid.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px 20px;grid-column:1/-1">No hay oportunidades óptimas disponibles.</p>';
       return;
     }
 
     opportunities.forEach((opp, idx) => {
-    const endDate = new Date(opp.startDate);
-    endDate.setDate(endDate.getDate() + opp.daysFree - 1);
+    const endDate = opp.endDate;
 
     const daysAvailable = parseInt(document.getElementById('vacDaysAvailable').value) || 0;
     const totalFormula = opp.totalRestDays + daysAvailable;
@@ -504,32 +480,32 @@ function renderVacacionesExpanded() {
     const startStr = `${DIAS[opp.startDate.getDay()]} ${opp.startDate.getDate()}<br>${MESES_F[opp.startDate.getMonth()]}`;
     const endStr = `${DIAS[endDate.getDay()]} ${endDate.getDate()}<br>${MESES_F[endDate.getMonth()]}`;
 
-    // Obtener ventana expandida
-    const countSandwichAsLibre = vacToggleSandwich.checked;
-    const { start: expandedStart, end: expandedEnd } = countRestWindow(opp.startDate, feriados, allSandwiches, countSandwichAsLibre);
-
-    // Contar feriados, fines de semana y sándwiches en la VENTANA EXPANDIDA
+    // Clasificar cada día de la ventana expandida en una sola categoría, para que la
+    // fórmula sume exactamente el total: vacaciones > feriado > fin de semana > sándwich
+    const vacKeys = new Set(opp.vacDays.map(d => d.toDateString()));
     let holidayCount = 0, weekendCount = 0, sandwichCount = 0;
     let holidayNames = [], sandwichNames = [];
-    let current = new Date(expandedStart);
-    while (current <= expandedEnd) {
+    let current = new Date(opp.windowStart);
+    while (current <= opp.windowEnd) {
       const isFDS = current.getDay() === 0 || current.getDay() === 6;
       const isSandwich = allSandwiches.some(s => s.toDateString() === current.toDateString());
       const feriadoObj = feriados.find(f => f.fecha.toDateString() === current.toDateString());
 
-      if (feriadoObj) {
+      if (vacKeys.has(current.toDateString())) {
+        // día de vacaciones: ya cuenta en "vac"
+      } else if (feriadoObj) {
         holidayCount++;
         if (!holidayNames.includes(feriadoObj.nombre)) {
           holidayNames.push(feriadoObj.nombre);
         }
+      } else if (isFDS) {
+        weekendCount++;
       } else if (isSandwich) {
         sandwichCount++;
         sandwichNames.push(`${current.getDate()}/${current.getMonth() + 1}`);
       }
-      if (isFDS) weekendCount++;
       current.setDate(current.getDate() + 1);
     }
-
     // Nombres combinados: feriados + sándwiches
     let allNames = [...holidayNames];
     if (sandwichCount > 0 && countSandwichAsLibre) {
@@ -602,7 +578,7 @@ function renderVacacionesExpanded() {
       </div>
 
       <!-- MINI CALENDAR -->
-      ${generateMiniCalendar(opp.startDate, opp)}
+      ${generateMiniCalendar(opp, countSandwichAsLibre)}
 
       <!-- TIMELINE VISUAL -->
       <div class="vac-timeline-inline">
@@ -611,7 +587,6 @@ function renderVacacionesExpanded() {
     `;
     grid.appendChild(item);
   });
-  console.log('renderVacacionesExpanded() completed successfully');
   } catch (err) {
     console.error('ERROR in renderVacacionesExpanded:', err.message);
     console.error('Stack:', err.stack);
@@ -622,19 +597,17 @@ function renderVacacionesExpanded() {
   }
 }
 
-function generateMiniCalendar(startDate, opp) {
-  const { feriados } = DATA[currentYear];
+function generateMiniCalendar(opp, countSandwichAsLibre) {
+  const feriados = feriadosConVecinos(currentYear);
   const allSandwiches = calcSW(feriados);
+  const vacKeys = new Set(opp.vacDays.map(d => d.toDateString()));
 
-  // Calcular el rango de semanas afectadas
-  const windowEnd = new Date(opp.startDate.getTime() + opp.daysFree * 24 * 60 * 60 * 1000);
-
-  // Primera fecha: lunes de la semana que contiene opp.startDate (o antes)
-  const calStart = new Date(opp.startDate);
+  // Primera fecha: lunes de la semana en que empieza la ventana
+  const calStart = new Date(opp.windowStart);
   calStart.setDate(calStart.getDate() - ((calStart.getDay() + 6) % 7)); // Ir al lunes
 
-  // Última fecha: domingo de la semana que contiene windowEnd
-  const calEnd = new Date(windowEnd);
+  // Última fecha: domingo de la semana en que termina la ventana
+  const calEnd = new Date(opp.windowEnd);
   calEnd.setDate(calEnd.getDate() + (7 - ((calEnd.getDay() + 6) % 7)) % 7); // Ir al domingo
 
   let html = `<div class="vac-mini-calendar">
@@ -648,12 +621,12 @@ function generateMiniCalendar(startDate, opp) {
     const isFer = isFeriado(current, feriados);
     const isSandwich = allSandwiches.some(s => s.toDateString() === current.toDateString());
     const isFDS = current.getDay() === 0 || current.getDay() === 6;
-    const inRange = current >= opp.startDate && current <= windowEnd;
+    const isVac = vacKeys.has(current.toDateString());
 
     let clase = 'vac-cal-day';
     if (isFer) clase += ' holiday';
-    else if (isFDS || isSandwich) clase += ' rest';
-    else if (inRange) clase += ' range';
+    else if (isVac) clase += ' range';
+    else if (isFDS || (isSandwich && countSandwichAsLibre)) clase += ' rest';
     else clase += ' work';
 
     html += `<div class="${clase}" title="${current.toDateString()}">${current.getDate()}</div>`;
